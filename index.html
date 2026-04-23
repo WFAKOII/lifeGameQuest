@@ -437,6 +437,44 @@
     100% { transform: scale(1); opacity: 1; }
   }
 
+  .rarity-N   { color: #b0bec5; border-color: #b0bec5 !important; }
+  .rarity-R   { color: #42a5f5; border-color: #42a5f5 !important; }
+  .rarity-SR  { color: #ab47bc; border-color: #ab47bc !important; }
+  .rarity-SSR { color: var(--gold); border-color: var(--gold) !important; text-shadow: 0 0 8px rgba(255,213,79,0.6); }
+
+  .inv-grid { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; }
+  .inv-item {
+    background: var(--bg-panel-light);
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 15px; position: relative;
+  }
+  .inv-count {
+    position: absolute; top: -5px; right: -5px;
+    background: var(--gem); color: #fff;
+    font-size: 11px; width: 18px; height: 18px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'VT323', monospace;
+  }
+  .inv-use {
+    background: none; border: 1px solid var(--border);
+    color: var(--text-dim); font-size: 12px; cursor: pointer;
+    padding: 2px 6px; border-radius: 2px;
+    font-family: 'VT323', monospace;
+  }
+  .inv-use:hover { border-color: var(--gold); color: var(--gold); }
+
+  .odds-row { display:flex; align-items:center; gap:8px; padding:4px 0; font-size:14px; border-bottom:1px solid var(--border); }
+  .odds-badge { font-size:11px; padding:1px 6px; border:1px solid; border-radius:2px; min-width:32px; text-align:center; font-family:'VT323',monospace; }
+
+  .prize-row { display:flex; gap:6px; align-items:center; margin-bottom:6px; flex-wrap:wrap; }
+  .prize-row input[type="text"] { flex:1; min-width:80px; }
+  .prize-row input[type="number"] { width:50px; }
+  .prize-row select { background:var(--bg-deep); border:2px solid var(--border); color:var(--text); padding:6px 4px; font-family:'VT323',monospace; font-size:14px; border-radius:2px; }
+
   /* === MODAL === */
   .modal-bg {
     position: fixed; inset: 0;
@@ -1072,13 +1110,8 @@
   <!-- Gacha -->
   <div class="panel" id="panel-gacha" style="display:none">
     <div class="panel-header">
-      <div class="panel-title">🎰 抽卡 / 消費</div>
-    </div>
-
-    <div class="shop-info">
-      <strong>抽卡規則：</strong><br>
-      • 每次抽卡消耗 <strong style="color:var(--gem)">50 💎</strong><br>
-      • 寶石透過完成任務與待辦取得
+      <div class="panel-title">🎰 抽卡</div>
+      <button class="add-btn" onclick="openEditPrizes()">✏ 編輯獎池</button>
     </div>
 
     <div class="gacha-area">
@@ -1088,15 +1121,32 @@
       <div class="gacha-result" id="gachaResult">準備好就按下抽卡按鈕！</div>
     </div>
 
-    <div style="margin-top: 24px; padding-top: 16px; border-top: 2px dashed var(--border);">
-      <div class="panel-title" style="margin-bottom: 10px;">💸 純消費（不抽卡）</div>
-      <div class="shop-info">把金幣兌現拿去花，例如真的買咖啡時記錄下來</div>
+    <!-- Odds table -->
+    <div style="margin-top:12px;">
+      <div style="cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--text-dim);font-size:13px;padding:4px 0;" onclick="toggleOddsTable()">
+        📋 獎池機率 <span id="oddsArrow">▸</span>
+      </div>
+      <div id="oddsTable" style="display:none;margin-top:6px;"></div>
+    </div>
+
+    <!-- Inventory -->
+    <div style="margin-top:16px;padding-top:16px;border-top:2px dashed var(--border);">
+      <div class="panel-header" style="cursor:pointer;margin-bottom:0;" onclick="toggleInventory()">
+        <div class="panel-title" style="font-size:12px;">🎒 物品欄 <span id="invArrow">▾</span></div>
+      </div>
+      <div id="inventoryList"></div>
+    </div>
+
+    <!-- Spend -->
+    <div style="margin-top:16px;padding-top:16px;border-top:2px dashed var(--border);">
+      <div class="panel-title" style="margin-bottom:10px;">💸 純消費</div>
+      <div class="shop-info">花費娛樂點或記錄其他消費</div>
       <div class="spend-form">
         <div class="field" style="margin:0;">
           <label>消費金額</label>
           <input type="number" id="spendAmount" placeholder="100" min="1">
         </div>
-        <button class="btn btn-ok" onclick="spendGold()" style="height: 40px;">扣除</button>
+        <button class="btn btn-ok" onclick="spendGold()" style="height:40px;">扣除</button>
       </div>
     </div>
   </div>
@@ -1151,6 +1201,20 @@
     <a onclick="exportData()">匯出資料</a>·
     <a onclick="importData()">匯入資料</a>·
     <a onclick="resetAll()">重置全部</a>
+  </div>
+</div>
+
+<!-- Prize Editor Modal -->
+<div class="modal-bg" id="prizeModalBg">
+  <div class="modal" style="max-width:440px;width:95%;">
+    <div class="modal-title">✏ 編輯獎池</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">權重越大機率越高；機率 = 權重 ÷ 總權重</div>
+    <div id="prizeEditor" style="max-height:55vh;overflow-y:auto;"></div>
+    <button class="btn" onclick="addPrizeRow()" style="width:100%;margin-top:8px;background:var(--bg-panel-light);">+ 新增獎項</button>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closePrizeModal()">取消</button>
+      <button class="btn btn-ok" onclick="savePrizes()">儲存</button>
+    </div>
   </div>
 </div>
 
@@ -1369,6 +1433,15 @@ function defaultState() {
     ],
     ledger: [],
     todos: [],
+    inventory: [],
+    gachaPrizes: [
+      { id: 1, name: '飲料卷',     emoji: '🥤', rarity: 'N',   weight: 35 },
+      { id: 2, name: '50元娛樂點',  emoji: '🎮', rarity: 'N',   weight: 30 },
+      { id: 3, name: '100元娛樂點', emoji: '🎯', rarity: 'R',   weight: 20 },
+      { id: 4, name: '150元娛樂點', emoji: '🎁', rarity: 'SR',  weight: 12 },
+      { id: 5, name: '200元娛樂點', emoji: '💸', rarity: 'SR',  weight:  2 },
+      { id: 6, name: '神秘大獎',    emoji: '👑', rarity: 'SSR', weight:  1 },
+    ],
     lastDailyReset: todayStr(),
     lastWeeklyReset: weekStr(),
     lastModified: Date.now(),
@@ -2109,31 +2182,28 @@ document.querySelectorAll('.tab').forEach(t => {
     if (t.dataset.tab === 'ledger') renderLedger();
     if (t.dataset.tab === 'todo') renderTodos();
     if (t.dataset.tab === 'event') renderCalendar();
+    if (t.dataset.tab === 'gacha') renderInventory();
   });
 });
 
 // === GACHA ===
-const GACHA_PRIZES = [
-  { name: '⭐ 普通獎勵：放空5分鐘', weight: 40 },
-  { name: '✨ 不錯：聽一首喜歡的歌', weight: 30 },
-  { name: '💫 好運：給自己一個小休息', weight: 20 },
-  { name: '🌟 稀有：解鎖一個小確幸', weight: 8 },
-  { name: '👑 SSR！今日好運加倍！', weight: 2 },
-];
+const RARITY_LABEL = { N: '普通', R: '稀有', SR: '超稀有', SSR: '傳說' };
+const RARITY_COLOR = { N: '#b0bec5', R: '#42a5f5', SR: '#ab47bc', SSR: '#ffd54f' };
+
+function getGachaPrizes() {
+  return (state.gachaPrizes && state.gachaPrizes.length) ? state.gachaPrizes : defaultState().gachaPrizes;
+}
 
 function pickPrize() {
-  const total = GACHA_PRIZES.reduce((s, p) => s + p.weight, 0);
+  const prizes = getGachaPrizes();
+  const total = prizes.reduce((s, p) => s + (p.weight || 1), 0);
   let r = Math.random() * total;
-  for (const p of GACHA_PRIZES) {
-    r -= p.weight;
-    if (r <= 0) return p.name;
-  }
-  return GACHA_PRIZES[0].name;
+  for (const p of prizes) { r -= (p.weight || 1); if (r <= 0) return p; }
+  return prizes[0];
 }
 
 function doGacha() {
   if (state.gem < 50) { toast('💎 寶石不夠！需要 50 💎'); return; }
-
   state.gem -= 50;
   addLedger(`[抽卡] 抽一次`, 0, 50, 'expense');
   saveState(); render();
@@ -2142,17 +2212,140 @@ function doGacha() {
   const result = document.getElementById('gachaResult');
   const btn = document.getElementById('gachaBtn');
   machine.classList.add('spinning');
-  result.classList.remove('win');
+  result.className = 'gacha-result';
   result.textContent = '抽卡中...';
   btn.disabled = true;
 
   setTimeout(() => {
     machine.classList.remove('spinning');
     const prize = pickPrize();
-    result.textContent = prize;
-    result.classList.add('win');
+    if (!state.inventory) state.inventory = [];
+    const existing = state.inventory.find(i => i.name === prize.name);
+    if (existing) { existing.count++; } else {
+      state.inventory.push({ id: Date.now(), name: prize.name, emoji: prize.emoji || '🎁', rarity: prize.rarity || 'N', count: 1 });
+    }
+    saveState();
+    const col = RARITY_COLOR[prize.rarity] || RARITY_COLOR.N;
+    const lbl = RARITY_LABEL[prize.rarity] || prize.rarity || 'N';
+    result.className = `gacha-result win rarity-${prize.rarity || 'N'}`;
+    result.innerHTML = `${prize.emoji || '🎁'} ${escapeHtml(prize.name)}<br><span style="font-size:12px;color:${col};border:1px solid ${col};padding:1px 8px;border-radius:2px;">${lbl}</span>`;
     btn.disabled = false;
+    renderInventory();
   }, 1200);
+}
+
+// === INVENTORY ===
+let invExpanded = true;
+function toggleInventory() {
+  invExpanded = !invExpanded;
+  document.getElementById('inventoryList').style.display = invExpanded ? '' : 'none';
+  document.getElementById('invArrow').textContent = invExpanded ? '▾' : '▸';
+}
+
+function renderInventory() {
+  const el = document.getElementById('inventoryList');
+  if (!el) return;
+  const items = state.inventory || [];
+  if (!items.length) {
+    el.innerHTML = `<div style="color:var(--text-muted);font-size:13px;padding:8px 0;">還沒有物品，去抽卡吧！</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="inv-grid">${items.map(item => {
+    const col = RARITY_COLOR[item.rarity] || RARITY_COLOR.N;
+    return `<div class="inv-item" style="border-color:${col};">
+      ${item.count > 1 ? `<div class="inv-count">${item.count}</div>` : ''}
+      <span>${item.emoji || '🎁'}</span>
+      <span style="font-size:13px;">${escapeHtml(item.name)}</span>
+      <button class="inv-use" onclick="useItem(${item.id})">使用</button>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function useItem(id) {
+  if (!state.inventory) return;
+  const item = state.inventory.find(i => i.id === id);
+  if (!item) return;
+  item.count--;
+  if (item.count <= 0) state.inventory = state.inventory.filter(i => i.id !== id);
+  saveState();
+  renderInventory();
+  toast(`${item.emoji || ''} 已使用 ${item.name}`);
+}
+
+// === ODDS TABLE ===
+let oddsExpanded = false;
+function toggleOddsTable() {
+  oddsExpanded = !oddsExpanded;
+  const el = document.getElementById('oddsTable');
+  const arrow = document.getElementById('oddsArrow');
+  if (el) el.style.display = oddsExpanded ? '' : 'none';
+  if (arrow) arrow.textContent = oddsExpanded ? '▾' : '▸';
+  if (oddsExpanded) renderOddsTable();
+}
+
+function renderOddsTable() {
+  const el = document.getElementById('oddsTable');
+  if (!el) return;
+  const prizes = getGachaPrizes();
+  const total = prizes.reduce((s, p) => s + (p.weight || 1), 0);
+  el.innerHTML = prizes.map(p => {
+    const pct = ((p.weight || 1) / total * 100).toFixed(1);
+    const col = RARITY_COLOR[p.rarity] || RARITY_COLOR.N;
+    const lbl = RARITY_LABEL[p.rarity] || p.rarity || '';
+    return `<div class="odds-row">
+      <span>${p.emoji || '🎁'}</span>
+      <span style="flex:1;">${escapeHtml(p.name)}</span>
+      <span class="odds-badge" style="color:${col};border-color:${col};">${lbl}</span>
+      <span style="font-size:13px;color:var(--text-muted);min-width:42px;text-align:right;">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+// === PRIZE EDITOR ===
+let editingPrizes = [];
+function openEditPrizes() {
+  editingPrizes = JSON.parse(JSON.stringify(getGachaPrizes()));
+  renderPrizeEditor();
+  document.getElementById('prizeModalBg').classList.add('show');
+}
+function closePrizeModal() { document.getElementById('prizeModalBg').classList.remove('show'); }
+
+function renderPrizeEditor() {
+  const el = document.getElementById('prizeEditor');
+  const total = editingPrizes.reduce((s, p) => s + (parseInt(p.weight) || 0), 0);
+  el.innerHTML = editingPrizes.map((p, i) => `
+    <div class="prize-row" data-idx="${i}">
+      <input type="text" value="${escapeHtml(p.emoji || '🎁')}" maxlength="4" style="width:38px;text-align:center;" placeholder="📦">
+      <input type="text" value="${escapeHtml(p.name)}" placeholder="獎項名稱" style="flex:1;min-width:80px;">
+      <select>${['N','R','SR','SSR'].map(r => `<option value="${r}"${p.rarity===r?' selected':''}>${RARITY_LABEL[r]}</option>`).join('')}</select>
+      <input type="number" value="${p.weight || 10}" min="1" title="權重">
+      <button class="quest-del" onclick="removePrizeRow(${i})" title="刪除">✕</button>
+    </div>`).join('') +
+    `<div id="prizeTotal" style="font-size:12px;color:var(--text-muted);margin-top:4px;">總權重：${total}</div>`;
+}
+
+function addPrizeRow() {
+  editingPrizes.push({ id: Date.now(), name: '', emoji: '🎁', rarity: 'N', weight: 10 });
+  renderPrizeEditor();
+}
+
+function removePrizeRow(idx) {
+  editingPrizes.splice(idx, 1);
+  renderPrizeEditor();
+}
+
+function savePrizes() {
+  const rows = document.querySelectorAll('#prizeEditor .prize-row');
+  const saved = [...rows].map(row => {
+    const ins = row.querySelectorAll('input, select');
+    return { id: Date.now() + Math.random(), emoji: ins[0].value.trim() || '🎁', name: ins[1].value.trim(), rarity: ins[2].value, weight: parseInt(ins[3].value) || 1 };
+  }).filter(p => p.name);
+  if (!saved.length) { alert('至少需要一個獎項'); return; }
+  state.gachaPrizes = saved;
+  saveState();
+  closePrizeModal();
+  if (oddsExpanded) renderOddsTable();
+  toast('獎池已更新！');
 }
 
 // === SPEND ===
