@@ -80,6 +80,7 @@
     font-size: 48px;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
   }
 
   .avatar::after {
@@ -1200,6 +1201,8 @@ function saveEntry() {
 
 function todayStr() {
   const d = new Date();
+  // Daily reset happens at 04:00 — before 4am counts as "previous day"
+  if (d.getHours() < 4) d.setDate(d.getDate() - 1);
   return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
 }
 
