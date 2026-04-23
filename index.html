@@ -1233,7 +1233,7 @@
     <div class="field-row">
       <div class="field">
         <label>💎 寶石</label>
-        <input type="number" id="qGem" value="3" min="0">
+        <input type="number" id="qGem" value="30" min="0">
       </div>
       <div class="field">
         <label>⚡ XP</label>
@@ -1418,11 +1418,11 @@ function defaultState() {
     gem: 0,
     quests: {
       daily: [
-        { id: 1, name: '喝 2000ml 水', gem: 1, xp: 10, done: false },
-        { id: 2, name: '運動 30 分鐘', gem: 3, xp: 30, done: false },
+        { id: 1, name: '喝 2000ml 水', gem: 10, xp: 10, done: false },
+        { id: 2, name: '運動 30 分鐘', gem: 30, xp: 30, done: false },
       ],
       weekly: [
-        { id: 3, name: '整理房間', gem: 5, xp: 80, done: false },
+        { id: 3, name: '整理房間', gem: 50, xp: 80, done: false },
       ],
       event: [],
     },
@@ -1985,7 +1985,7 @@ function openAddTodo() {
   const titleInput = document.getElementById('todoInput');
   document.getElementById('tdName').value = titleInput ? titleInput.value.trim() : '';
   document.getElementById('tdDate').value = dateInput ? (dateInput.value || '') : '';
-  document.getElementById('tdGem').value = '1';
+  document.getElementById('tdGem').value = '10';
   document.getElementById('tdXp').value = '10';
   document.getElementById('todoModalBg').classList.add('show');
   setTimeout(() => document.getElementById('tdName').focus(), 100);
@@ -2131,7 +2131,7 @@ function openAddQuest(type) {
   editingType = type;
   document.getElementById('modalTitle').textContent = `新增${type === 'daily' ? '每日' : type === 'weekly' ? '每週' : '活動'}任務`;
   document.getElementById('qName').value = '';
-  document.getElementById('qGem').value = type === 'daily' ? 3 : type === 'weekly' ? 10 : 5;
+  document.getElementById('qGem').value = type === 'daily' ? 30 : type === 'weekly' ? 100 : 50;
   document.getElementById('qXp').value = type === 'daily' ? 20 : type === 'weekly' ? 80 : 50;
   // Show/hide date field for event type
   const dateField = document.getElementById('qDateField');
