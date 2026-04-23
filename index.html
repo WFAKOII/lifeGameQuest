@@ -1934,6 +1934,13 @@ function calcAccountBalance(accountId) {
   return balance;
 }
 
+let acctOverviewExpanded = true;
+
+function toggleAcctOverview() {
+  acctOverviewExpanded = !acctOverviewExpanded;
+  renderAccountOverview();
+}
+
 function renderAccountOverview() {
   const el = document.getElementById('acctOverview');
   if (!el) return;
@@ -1944,31 +1951,36 @@ function renderAccountOverview() {
     else totalAssets += bal;
   });
   const net = totalAssets + totalDebt;
+  const netColor = net >= 0 ? 'var(--hp)' : 'var(--danger)';
+  const arrow = acctOverviewExpanded ? '▾' : '▸';
+
   el.innerHTML = `
     <div class="acct-overview">
-      <div class="acct-overview-hdr">
-        <span class="acct-overview-title">🏦 帳戶概況</span>
-        <span class="acct-net" style="color:${net >= 0 ? 'var(--hp)' : 'var(--danger)'}">
+      <div class="acct-overview-hdr" onclick="toggleAcctOverview()" style="cursor:pointer;">
+        <span class="acct-overview-title">${arrow} 🏦 帳戶概況</span>
+        <span class="acct-net" style="color:${netColor};">
           淨資產 ${net >= 0 ? '+' : ''}${net}
         </span>
       </div>
-      <div class="stats-row" style="margin-bottom:10px;">
-        <div class="stat-box"><div class="stat-label">總資產</div><div class="stat-value income">${totalAssets}</div></div>
-        <div class="stat-box"><div class="stat-label">負債</div><div class="stat-value expense">${Math.abs(totalDebt)}</div></div>
-        <div class="stat-box"><div class="stat-label">淨資產</div><div class="stat-value net">${net}</div></div>
-      </div>
-      ${state.accounts.map(a => {
-        const bal = calcAccountBalance(a.id);
-        const color = bal >= 0 ? 'var(--hp)' : 'var(--danger)';
-        const debtTag = a.isLiability
-          ? `<span style="font-size:11px;color:var(--danger);border:1px solid var(--danger);padding:1px 3px;border-radius:2px;margin-left:4px;">負債</span>`
-          : '';
-        return `<div class="acct-item">
-          <span class="acct-name">${a.emoji} ${escapeHtml(a.name)}${debtTag}</span>
-          <span class="acct-bal" style="color:${color};">${bal}</span>
-          <button class="acct-edit-btn" onclick="openEditAccount(${a.id})" title="編輯">✏</button>
-        </div>`;
-      }).join('')}
+      ${acctOverviewExpanded ? `
+        <div class="stats-row" style="margin:8px 0 10px;">
+          <div class="stat-box"><div class="stat-label">總資產</div><div class="stat-value income">${totalAssets}</div></div>
+          <div class="stat-box"><div class="stat-label">負債</div><div class="stat-value expense">${Math.abs(totalDebt)}</div></div>
+          <div class="stat-box"><div class="stat-label">淨資產</div><div class="stat-value net">${net}</div></div>
+        </div>
+        ${state.accounts.map(a => {
+          const bal = calcAccountBalance(a.id);
+          const color = bal >= 0 ? 'var(--hp)' : 'var(--danger)';
+          const debtTag = a.isLiability
+            ? `<span style="font-size:11px;color:var(--danger);border:1px solid var(--danger);padding:1px 3px;border-radius:2px;margin-left:4px;">負債</span>`
+            : '';
+          return `<div class="acct-item">
+            <span class="acct-name">${a.emoji} ${escapeHtml(a.name)}${debtTag}</span>
+            <span class="acct-bal" style="color:${color};">${bal}</span>
+            <button class="acct-edit-btn" onclick="event.stopPropagation();openEditAccount(${a.id})" title="編輯">✏</button>
+          </div>`;
+        }).join('')}
+      ` : ''}
     </div>
   `;
 }
