@@ -113,6 +113,32 @@
     margin-right: 6px;
   }
 
+  .title-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 13px; color: var(--gem);
+    border: 1px solid var(--gem); padding: 2px 8px;
+    border-radius: 2px; cursor: pointer;
+    font-family: 'VT323', monospace; letter-spacing: 1px;
+    transition: all 0.15s; width: fit-content;
+  }
+  .title-badge:hover { background: var(--bg-panel-light); color: #fff; border-color: #fff; }
+
+  .title-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 8px; max-height: 58vh; overflow-y: auto; padding: 4px 0;
+  }
+  .title-card {
+    background: var(--bg-panel-light); border: 2px solid var(--border);
+    border-radius: 4px; padding: 10px 6px; text-align: center;
+    cursor: pointer; transition: border-color 0.1s;
+  }
+  .title-card:hover:not(.locked) { border-color: var(--gem); }
+  .title-card.active { border-color: var(--gold); background: rgba(255,213,79,0.08); }
+  .title-card.locked { opacity: 0.3; cursor: default; }
+  .title-card-emoji { font-size: 22px; margin-bottom: 4px; }
+  .title-card-name { font-size: 13px; color: var(--text); }
+  .title-card-level { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
   .xp-bar {
     height: 12px;
     background: var(--bg-deep);
@@ -437,6 +463,44 @@
     100% { transform: scale(1); opacity: 1; }
   }
 
+  .rarity-N   { color: #b0bec5; border-color: #b0bec5 !important; }
+  .rarity-R   { color: #42a5f5; border-color: #42a5f5 !important; }
+  .rarity-SR  { color: #ab47bc; border-color: #ab47bc !important; }
+  .rarity-SSR { color: var(--gold); border-color: var(--gold) !important; text-shadow: 0 0 8px rgba(255,213,79,0.6); }
+
+  .inv-grid { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; }
+  .inv-item {
+    background: var(--bg-panel-light);
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 15px; position: relative;
+  }
+  .inv-count {
+    position: absolute; top: -5px; right: -5px;
+    background: var(--gem); color: #fff;
+    font-size: 11px; width: 18px; height: 18px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'VT323', monospace;
+  }
+  .inv-use {
+    background: none; border: 1px solid var(--border);
+    color: var(--text-dim); font-size: 12px; cursor: pointer;
+    padding: 2px 6px; border-radius: 2px;
+    font-family: 'VT323', monospace;
+  }
+  .inv-use:hover { border-color: var(--gold); color: var(--gold); }
+
+  .odds-row { display:flex; align-items:center; gap:8px; padding:4px 0; font-size:14px; border-bottom:1px solid var(--border); }
+  .odds-badge { font-size:11px; padding:1px 6px; border:1px solid; border-radius:2px; min-width:32px; text-align:center; font-family:'VT323',monospace; }
+
+  .prize-row { display:flex; gap:6px; align-items:center; margin-bottom:6px; flex-wrap:wrap; }
+  .prize-row input[type="text"] { flex:1; min-width:80px; }
+  .prize-row input[type="number"] { width:50px; }
+  .prize-row select { background:var(--bg-deep); border:2px solid var(--border); color:var(--text); padding:6px 4px; font-family:'VT323',monospace; font-size:14px; border-radius:2px; }
+
   /* === MODAL === */
   .modal-bg {
     position: fixed; inset: 0;
@@ -754,6 +818,137 @@
   .ledger-entry:hover .ledger-del { opacity: 1; }
   .ledger-del:hover { color: var(--danger); }
 
+  /* === CATEGORY GRID === */
+  .cat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    max-height: 130px;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .cat-btn {
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    color: var(--text-dim);
+    padding: 5px 2px;
+    font-family: 'VT323', monospace;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 2px;
+    text-align: center;
+    transition: all 0.15s;
+    line-height: 1.2;
+  }
+
+  .cat-btn:hover { border-color: var(--border-bright); color: var(--text); }
+
+  .cat-btn.active {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(255,213,79,0.1);
+  }
+
+  .cat-tag {
+    display: inline-block;
+    font-size: 12px;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    border-radius: 2px;
+    margin-left: 4px;
+    white-space: nowrap;
+  }
+
+  .acct-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .acct-btn {
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    color: var(--text-dim);
+    padding: 4px 10px;
+    font-family: 'VT323', monospace;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+
+  .acct-btn:hover { border-color: var(--border-bright); color: var(--text); }
+
+  .acct-btn.active {
+    border-color: var(--xp);
+    color: var(--xp);
+    background: rgba(79,195,247,0.1);
+  }
+
+  .acct-btn.add-acct { color: var(--text-muted); }
+
+  /* === ACCOUNT OVERVIEW === */
+  .acct-overview {
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+
+  .acct-overview-hdr {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .acct-overview-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+  }
+
+  .acct-net {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+  }
+
+  .acct-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 2px;
+    border-bottom: 1px solid rgba(74,84,144,0.2);
+    font-size: 16px;
+  }
+
+  .acct-item:last-child { border-bottom: none; }
+  .acct-name { flex: 1; color: var(--text); }
+
+  .acct-bal {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    min-width: 60px;
+    text-align: right;
+  }
+
+  .acct-edit-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 2px 6px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .acct-item:hover .acct-edit-btn { opacity: 1; }
+  .acct-edit-btn:hover { color: var(--gold); }
+
   /* === CLOUD SYNC === */
   .cloud-bar {
     background: var(--bg-panel);
@@ -814,6 +1009,139 @@
     .gacha-machine { width: 160px; height: 160px; font-size: 72px; }
     .level-up-text { font-size: 22px; }
   }
+
+  /* === CALENDAR === */
+  .cal-wrap { margin-bottom: 14px; }
+  .cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+  .cal-header { font-family:'Press Start 2P',monospace; font-size:7px; color:var(--text-muted); text-align:center; padding:4px 0; }
+  .cal-day {
+    background:var(--bg-deep); border:1px solid var(--border); border-radius:2px;
+    padding:4px 2px; text-align:center; font-size:16px; cursor:pointer;
+    position:relative; min-height:32px; transition:all 0.15s;
+  }
+  .cal-day:hover { border-color:var(--border-bright); }
+  .cal-day.today { border-color:var(--gold); color:var(--gold); }
+  .cal-day.selected { background:var(--bg-panel-light); border-color:var(--xp); }
+  .cal-day.other-month { opacity:0.3; }
+  .cal-day.has-event::after {
+    content:''; position:absolute; bottom:2px; left:50%; transform:translateX(-50%);
+    width:4px; height:4px; border-radius:50%; background:var(--gem);
+  }
+
+/* === RPG PAGE === */
+#rpgPage {
+  position: fixed; inset: 0;
+  background: var(--bg-deep);
+  z-index: 200;
+  overflow-y: auto;
+  padding: 0 16px 24px;
+  max-width: 480px;
+  margin: 0 auto;
+  display: none;
+}
+.rpg-open-btn {
+  background: linear-gradient(180deg, #c0392b, #922b21);
+  border: 2px solid #7b241c;
+  color: #fff; padding: 5px 14px;
+  font-family: 'VT323', monospace; font-size: 16px;
+  cursor: pointer; border-radius: 2px; margin-top: 6px;
+  box-shadow: 0 2px 0 #641e16; transition: all 0.1s; width: fit-content;
+}
+.rpg-open-btn:hover { transform: translateY(1px); box-shadow: 0 1px 0 #641e16; }
+
+.rpg-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0 12px; border-bottom: 2px solid var(--border);
+  margin-bottom: 16px; position: sticky; top: 0;
+  background: var(--bg-deep); z-index: 1;
+}
+.rpg-back-btn {
+  background: var(--bg-panel-light); border: 2px solid var(--border);
+  color: var(--text); padding: 5px 12px;
+  font-family: 'VT323', monospace; font-size: 16px;
+  cursor: pointer; border-radius: 2px;
+}
+.rpg-back-btn:hover { border-color: var(--gold); color: var(--gold); }
+.rpg-page-title { font-family:'Press Start 2P',monospace; font-size:11px; color:var(--gold); }
+.rpg-tickets { font-size:16px; color:var(--gem); }
+
+.monster-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin-top:8px; }
+.monster-card {
+  background:var(--bg-panel-light); border:2px solid var(--border);
+  border-radius:4px; padding:12px 8px; text-align:center;
+  cursor:pointer; transition:border-color 0.15s; position:relative;
+}
+.monster-card:hover { border-color:var(--gold); }
+.monster-tier {
+  position:absolute; top:6px; right:6px;
+  font-size:9px; font-family:'Press Start 2P',monospace;
+  padding:1px 5px; border-radius:2px;
+}
+.tier-E { background:#444; color:#aaa; }
+.tier-D { background:#1a3a5c; color:#5dade2; }
+.tier-C { background:#1b5e20; color:#69f0ae; }
+.tier-B { background:#5d3a00; color:#ffb74d; }
+.tier-A { background:#4a1050; color:#ce93d8; }
+.monster-card-emoji { font-size:38px; margin:4px 0; }
+.monster-card-name { font-size:14px; color:var(--text); margin-bottom:4px; }
+.monster-card-stats { font-size:11px; color:var(--text-muted); line-height:1.6; }
+.monster-rec { font-size:10px; color:var(--text-muted); margin-top:2px; }
+
+.battle-combatant {
+  display:flex; align-items:center; gap:12px;
+  background:var(--bg-panel-light); border:2px solid var(--border);
+  border-radius:4px; padding:10px 12px; margin-bottom:8px;
+}
+.battle-combatant-emoji { font-size:36px; min-width:42px; text-align:center; }
+.battle-combatant-info { flex:1; }
+.battle-combatant-name { font-size:14px; color:var(--text); margin-bottom:4px; }
+.hp-bar-wrap { height:10px; background:var(--bg-deep); border:1px solid var(--border); border-radius:2px; overflow:hidden; margin-bottom:3px; }
+.hp-bar-fill { height:100%; background:#e74c3c; border-radius:2px; transition:width 0.4s; }
+.hp-bar-fill.player { background:var(--xp); }
+.hp-text { font-size:12px; color:var(--text-muted); }
+
+.battle-mid { display:flex; align-items:center; gap:12px; margin:8px 0; }
+.dice-area { font-size:32px; text-align:center; min-width:60px; }
+.battle-log {
+  flex:1; background:var(--bg-deep); border:1px solid var(--border);
+  border-radius:2px; padding:6px 10px;
+  font-size:13px; color:var(--text-dim);
+  max-height:110px; overflow-y:auto; line-height:1.9;
+}
+.battle-log .log-entry { border-bottom:1px solid rgba(255,255,255,0.04); }
+
+.skill-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:8px; }
+.skill-btn {
+  background:var(--bg-panel-light); border:2px solid var(--border);
+  color:var(--text); padding:10px 8px;
+  font-family:'VT323',monospace; font-size:16px;
+  cursor:pointer; border-radius:4px; text-align:left;
+  transition:border-color 0.1s; line-height:1.4;
+}
+.skill-btn:hover:not([disabled]) { border-color:var(--gold); }
+.skill-btn[disabled] { opacity:0.35; cursor:not-allowed; }
+.skill-desc { font-size:11px; opacity:0.65; display:block; }
+
+.rpg-result { text-align:center; padding:40px 16px; }
+.result-icon { font-size:64px; margin-bottom:12px; }
+.result-title { font-family:'Press Start 2P',monospace; font-size:14px; color:var(--gold); margin-bottom:12px; }
+.result-rewards { font-size:20px; margin-bottom:24px; }
+.result-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+
+/* Stat allocation */
+.stat-row { margin-bottom:10px; }
+.stat-header { display:flex; align-items:center; gap:6px; margin-bottom:3px; font-size:13px; }
+.stat-header span:last-child { margin-left:auto; }
+.stat-bar-wrap { height:8px; background:var(--bg-deep); border:1px solid var(--border); border-radius:4px; overflow:hidden; margin-bottom:4px; }
+.stat-bar-fill { height:100%; border-radius:4px; transition:width 0.3s; }
+.stat-btns { display:flex; gap:4px; justify-content:flex-end; }
+.btn-sm { padding:1px 8px; font-size:13px; border:1px solid var(--border); background:var(--bg-card); color:var(--text); border-radius:4px; cursor:pointer; }
+.btn-sm:hover:not([disabled]) { border-color:var(--gold); }
+.btn-sm[disabled] { opacity:0.35; cursor:not-allowed; }
+.equip-slot { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid var(--border); font-size:13px; }
+.skill-entry { padding:10px; border:1px solid var(--border); border-radius:6px; margin-bottom:8px; background:var(--bg-card); }
+.skill-entry.locked { opacity:0.45; }
 </style>
 </head>
 <body>
@@ -824,11 +1152,13 @@
     <div class="avatar" id="avatar">🧙</div>
     <div class="char-info">
       <div class="char-name" id="charName" title="點擊修改">勇者</div>
+      <div class="title-badge" id="titleBadge" onclick="openTitleModal()" title="點擊更換稱號">🚶 旅人</div>
       <div>
         <span class="level-badge" id="levelBadge">LV.1</span>
         <span class="xp-text" id="xpText">0 / 100 XP</span>
       </div>
       <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+      <button class="rpg-open-btn" onclick="openRpg()">⚔ 冒險</button>
     </div>
   </div>
 
@@ -853,7 +1183,7 @@
   <!-- Tabs -->
   <div class="tabs">
     <div class="tab active" data-tab="daily">每日</div>
-    <div class="tab" data-tab="weekly">每週</div>
+    <div class="tab" data-tab="todo">待辦</div>
     <div class="tab" data-tab="event">活動</div>
     <div class="tab" data-tab="gacha">抽卡</div>
     <div class="tab" data-tab="ledger">帳本</div>
@@ -869,18 +1199,34 @@
       <button class="add-btn" onclick="openAddQuest('daily')">+ 新增</button>
     </div>
     <div class="quest-list" id="dailyList"></div>
+    <div style="margin-top:16px;padding-top:14px;border-top:2px dashed var(--border);">
+      <div class="panel-header" style="cursor:pointer;" onclick="toggleWeeklySection()">
+        <div>
+          <div class="panel-title" style="font-size:10px;">🛡 每週任務 <span id="weeklyArrow">▾</span></div>
+          <div class="reset-info" id="weeklyReset"></div>
+        </div>
+        <button class="add-btn" onclick="event.stopPropagation();openAddQuest('weekly')" style="font-size:8px;">+ 新增</button>
+      </div>
+      <div id="weeklySection">
+        <div class="quest-list" id="weeklyList"></div>
+      </div>
+    </div>
   </div>
 
-  <!-- Weekly -->
-  <div class="panel" id="panel-weekly" style="display:none">
+  <!-- Todo -->
+  <div class="panel" id="panel-todo" style="display:none">
     <div class="panel-header">
-      <div>
-        <div class="panel-title">🛡 每週任務</div>
-        <div class="reset-info" id="weeklyReset"></div>
-      </div>
-      <button class="add-btn" onclick="openAddQuest('weekly')">+ 新增</button>
+      <div class="panel-title">📋 待辦清單</div>
+      <button class="filter-btn" id="todoShowDone" onclick="toggleTodoDoneFilter()" style="font-size:8px;">顯示已完成</button>
     </div>
-    <div class="quest-list" id="weeklyList"></div>
+    <!-- Quick add form -->
+    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
+      <input type="text" id="todoInput" placeholder="新增待辦項目..." style="flex:1;min-width:120px;background:var(--bg-deep);border:2px solid var(--border);color:var(--text);padding:8px;font-family:'VT323',monospace;font-size:18px;border-radius:2px;">
+      <input type="date" id="todoDate" style="background:var(--bg-deep);border:2px solid var(--border);color:var(--text-dim);padding:6px;font-family:'VT323',monospace;font-size:14px;border-radius:2px;width:130px;">
+      <button class="add-btn" onclick="openAddTodo()">+ 設定</button>
+      <button class="btn btn-ok" onclick="quickAddTodo()" style="padding:6px 14px;">＋</button>
+    </div>
+    <div class="quest-list" id="todoList"></div>
   </div>
 
   <!-- Event -->
@@ -892,41 +1238,57 @@
       </div>
       <button class="add-btn" onclick="openAddQuest('event')">+ 新增</button>
     </div>
+    <div class="cal-wrap">
+      <div class="cal-nav">
+        <button class="cloud-btn" onclick="calPrev()">‹</button>
+        <span id="calTitle" style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text);"></span>
+        <button class="cloud-btn" onclick="calNext()">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+    </div>
     <div class="quest-list" id="eventList"></div>
   </div>
 
   <!-- Gacha -->
   <div class="panel" id="panel-gacha" style="display:none">
     <div class="panel-header">
-      <div class="panel-title">🎰 抽卡 / 消費</div>
-    </div>
-
-    <div class="shop-info">
-      <strong>抽卡規則：</strong><br>
-      • 每次抽卡消耗 1 💎 + 自訂金幣數<br>
-      • 💎 是「娛樂預算」，💰 是「總財富」<br>
-      • 兩個都會扣，提醒你娛樂的代價
+      <div class="panel-title">🎰 抽卡</div>
+      <button class="add-btn" onclick="openEditPrizes()">✏ 編輯獎池</button>
     </div>
 
     <div class="gacha-area">
       <div class="gacha-machine" id="gachaMachine">🎁</div>
-      <div class="gacha-cost">
-        本次抽卡花費：
-        <input type="number" id="gachaCost" value="50" min="1" style="width:80px; background:var(--bg-deep); border:2px solid var(--border); color:var(--gold); padding:4px; font-family:'VT323'; font-size:18px; text-align:center; border-radius:2px;"> 💰 + 1 💎
-      </div>
+      <div class="gacha-cost">每次抽卡花費：<strong style="color:var(--gem)">50 💎</strong></div>
       <button class="gacha-btn" id="gachaBtn" onclick="doGacha()">🎲 抽 卡 !</button>
       <div class="gacha-result" id="gachaResult">準備好就按下抽卡按鈕！</div>
     </div>
 
-    <div style="margin-top: 24px; padding-top: 16px; border-top: 2px dashed var(--border);">
-      <div class="panel-title" style="margin-bottom: 10px;">💸 純消費（不抽卡）</div>
-      <div class="shop-info">把金幣兌現拿去花，例如真的買咖啡時記錄下來</div>
+    <!-- Odds table -->
+    <div style="margin-top:12px;">
+      <div style="cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--text-dim);font-size:13px;padding:4px 0;" onclick="toggleOddsTable()">
+        📋 獎池機率 <span id="oddsArrow">▸</span>
+      </div>
+      <div id="oddsTable" style="display:none;margin-top:6px;"></div>
+    </div>
+
+    <!-- Inventory -->
+    <div style="margin-top:16px;padding-top:16px;border-top:2px dashed var(--border);">
+      <div class="panel-header" style="cursor:pointer;margin-bottom:0;" onclick="toggleInventory()">
+        <div class="panel-title" style="font-size:12px;">🎒 物品欄 <span id="invArrow">▾</span></div>
+      </div>
+      <div id="inventoryList"></div>
+    </div>
+
+    <!-- Spend -->
+    <div style="margin-top:16px;padding-top:16px;border-top:2px dashed var(--border);">
+      <div class="panel-title" style="margin-bottom:6px;">💸 使用娛樂點</div>
+      <div class="shop-info">可用娛樂點：<strong id="entPointsAvail" style="color:var(--gem)">0</strong> 元</div>
       <div class="spend-form">
         <div class="field" style="margin:0;">
           <label>消費金額</label>
           <input type="number" id="spendAmount" placeholder="100" min="1">
         </div>
-        <button class="btn btn-ok" onclick="spendGold()" style="height: 40px;">扣除</button>
+        <button class="btn btn-ok" onclick="spendPoints()" style="height:40px;">使用</button>
       </div>
     </div>
   </div>
@@ -940,6 +1302,8 @@
       </div>
       <button class="add-btn" onclick="openAddEntry()">+ 手動</button>
     </div>
+
+    <div id="acctOverview"></div>
 
     <div class="filter-row">
       <button class="filter-btn active" data-period="today" onclick="setLedgerPeriod('today')">今日</button>
@@ -982,6 +1346,32 @@
   </div>
 </div>
 
+<!-- Title Modal -->
+<div class="modal-bg" id="titleModalBg">
+  <div class="modal" style="max-width:440px;width:95%;">
+    <div class="modal-title">🏆 選擇稱號</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">升等解鎖新稱號，已解鎖的可自由切換</div>
+    <div class="title-grid" id="titleGrid"></div>
+    <div class="modal-actions" style="margin-top:12px;">
+      <button class="btn btn-cancel" onclick="closeTitleModal()">關閉</button>
+    </div>
+  </div>
+</div>
+
+<!-- Prize Editor Modal -->
+<div class="modal-bg" id="prizeModalBg">
+  <div class="modal" style="max-width:440px;width:95%;">
+    <div class="modal-title">✏ 編輯獎池</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">權重越大機率越高；機率 = 權重 ÷ 總權重</div>
+    <div id="prizeEditor" style="max-height:55vh;overflow-y:auto;"></div>
+    <button class="btn" onclick="addPrizeRow()" style="width:100%;margin-top:8px;background:var(--bg-panel-light);">+ 新增獎項</button>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closePrizeModal()">取消</button>
+      <button class="btn btn-ok" onclick="savePrizes()">儲存</button>
+    </div>
+  </div>
+</div>
+
 <!-- Add Quest Modal -->
 <div class="modal-bg" id="modalBg">
   <div class="modal">
@@ -990,14 +1380,14 @@
       <label>任務名稱</label>
       <input type="text" id="qName" placeholder="例：運動 30 分鐘">
     </div>
+    <div class="field" id="qDateField" style="display:none;">
+      <label>日期（選填）</label>
+      <input type="date" id="qDate">
+    </div>
     <div class="field-row">
       <div class="field">
-        <label>💰 金幣</label>
-        <input type="number" id="qGold" value="10" min="0">
-      </div>
-      <div class="field">
-        <label>💎 抽卡</label>
-        <input type="number" id="qGem" value="0" min="0">
+        <label>💎 寶石</label>
+        <input type="number" id="qGem" value="30" min="0">
       </div>
       <div class="field">
         <label>⚡ XP</label>
@@ -1007,6 +1397,35 @@
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeModal()">取消</button>
       <button class="btn btn-ok" onclick="saveQuest()">確認</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Todo Modal -->
+<div class="modal-bg" id="todoModalBg">
+  <div class="modal">
+    <div class="modal-title">📋 新增待辦</div>
+    <div class="field">
+      <label>項目名稱</label>
+      <input type="text" id="tdName" placeholder="例：繳交作業">
+    </div>
+    <div class="field">
+      <label>截止日期（選填）</label>
+      <input type="date" id="tdDate">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>💎 寶石獎勵</label>
+        <input type="number" id="tdGem" value="0" min="0">
+      </div>
+      <div class="field">
+        <label>⚡ XP 獎勵</label>
+        <input type="number" id="tdXp" value="0" min="0">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeTodoModal()">取消</button>
+      <button class="btn btn-ok" onclick="saveTodo()">確認</button>
     </div>
   </div>
 </div>
@@ -1030,13 +1449,43 @@
       </div>
       <div class="field">
         <label>類型</label>
-        <select id="eType" style="width:100%;background:var(--bg-deep);border:2px solid var(--border);color:var(--text);padding:8px 4px;font-family:'VT323';font-size:18px;border-radius:2px;">
-          <option value="income">+ 收入</option>
+        <select id="eType" onchange="onTypeChange(this.value)" style="width:100%;background:var(--bg-deep);border:2px solid var(--border);color:var(--text);padding:8px 4px;font-family:'VT323';font-size:18px;border-radius:2px;">
           <option value="expense">- 支出</option>
+          <option value="income">+ 收入</option>
+          <option value="transfer">↔ 轉帳</option>
         </select>
       </div>
     </div>
-    <div style="font-size:14px;color:var(--text-muted);margin-top:8px;">提示：金幣 / 抽卡填數量（正數），下方選收入或支出</div>
+    <!-- Normal: category + account (hidden for transfer) -->
+    <div id="normalFields">
+      <div class="field" style="margin-top:8px;">
+        <label>類別（選填）</label>
+        <div class="cat-grid" id="catGrid"></div>
+      </div>
+      <div class="field">
+        <label>帳戶（選填）</label>
+        <div class="acct-row" id="acctRow"></div>
+      </div>
+      <div class="field" style="margin-top:8px;">
+        <label>計入金幣餘額</label>
+        <button type="button" id="eCountsBtn" onclick="toggleECounts()"
+          style="width:100%;padding:8px 0;font-family:'VT323',monospace;font-size:18px;border-radius:2px;cursor:pointer;border:2px solid #2e7d32;background:var(--hp);color:var(--bg-deep);transition:all 0.15s;">
+          ✓ 計入
+        </button>
+      </div>
+    </div>
+    <!-- Transfer: from → to accounts (shown only for transfer) -->
+    <div id="transferFields" style="display:none;">
+      <div class="field" style="margin-top:8px;">
+        <label>從帳戶</label>
+        <select id="eFromAcct" style="width:100%;background:var(--bg-deep);border:2px solid var(--border);color:var(--text);padding:8px 4px;font-family:'VT323';font-size:18px;border-radius:2px;"></select>
+      </div>
+      <div class="field">
+        <label>到帳戶</label>
+        <select id="eToAcct" style="width:100%;background:var(--bg-deep);border:2px solid var(--border);color:var(--text);padding:8px 4px;font-family:'VT323';font-size:18px;border-radius:2px;"></select>
+      </div>
+      <div style="font-size:14px;color:var(--text-muted);margin-top:4px;">轉帳自動標記為「不計入金幣」</div>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeEntryModal()">取消</button>
       <button class="btn btn-ok" onclick="saveEntry()">確認</button>
@@ -1069,6 +1518,39 @@
   </div>
 </div>
 
+<!-- Account Edit Modal -->
+<div class="modal-bg" id="acctEditModalBg">
+  <div class="modal">
+    <div class="modal-title" id="acctEditTitle">編輯帳戶</div>
+    <input type="hidden" id="acctEditId">
+    <div class="field">
+      <label>初始餘額</label>
+      <input type="number" id="acctEditBalance" value="0">
+    </div>
+    <div class="field">
+      <label>帳戶類型</label>
+      <div style="display:flex;gap:8px;">
+        <button type="button" id="acctTypeAsset" onclick="setAcctType(false)"
+          style="flex:1;padding:8px;font-family:'VT323',monospace;font-size:16px;border-radius:2px;cursor:pointer;border:2px solid;transition:all 0.15s;">
+          💰 資產
+        </button>
+        <button type="button" id="acctTypeLiab" onclick="setAcctType(true)"
+          style="flex:1;padding:8px;font-family:'VT323',monospace;font-size:16px;border-radius:2px;cursor:pointer;border:2px solid;transition:all 0.15s;">
+          📛 負債型
+        </button>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">負債型如信用卡、貸款，餘額獨立計算不計入總資產</div>
+    <div class="modal-actions" style="justify-content:space-between;">
+      <button class="btn" style="background:var(--danger);border-color:#c62828;color:#fff;" onclick="deleteAccountFromModal()">刪除帳戶</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-cancel" onclick="closeAcctEditModal()">取消</button>
+        <button class="btn btn-ok" onclick="saveAcctEdit()">儲存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -1084,21 +1566,41 @@ function defaultState() {
   return {
     name: '勇者',
     avatar: '🧙',
+    activeTitle: null,
     level: 1,
     xp: 0,
     gold: 0,
     gem: 0,
     quests: {
       daily: [
-        { id: 1, name: '喝 2000ml 水', gold: 5, gem: 1, xp: 10, done: false },
-        { id: 2, name: '運動 30 分鐘', gold: 20, gem: 2, xp: 30, done: false },
+        { id: 1, name: '喝 2000ml 水', gem: 10, xp: 10, done: false },
+        { id: 2, name: '運動 30 分鐘', gem: 30, xp: 30, done: false },
       ],
       weekly: [
-        { id: 3, name: '整理房間', gold: 50, gem: 5, xp: 80, done: false },
+        { id: 3, name: '整理房間', gem: 50, xp: 80, done: false },
       ],
       event: [],
     },
+    accounts: [
+      { id: 1, name: '現金',   emoji: '💵', initialBalance: 0, isLiability: false },
+      { id: 2, name: '銀行',   emoji: '🏦', initialBalance: 0, isLiability: false },
+      { id: 3, name: '信用卡', emoji: '💳', initialBalance: 0, isLiability: true  },
+    ],
     ledger: [],
+    todos: [],
+    inventory: [],
+    challengeTickets: 3,
+    statPoints: 0,
+    allocatedStats: { str: 0, int: 0, vit: 0, agi: 0, crt: 0 },
+    equipment: { weapon: null, armor: null, accessory: null },
+    gachaPrizes: [
+      { id: 1, name: '銘謝惠顧',    emoji: '🙏', rarity: 'N',   weight: 50, noItem: true },
+      { id: 2, name: '50元娛樂點',  emoji: '🎮', rarity: 'N',   weight: 25 },
+      { id: 3, name: '100元娛樂點', emoji: '🎯', rarity: 'R',   weight: 14 },
+      { id: 4, name: '150元娛樂點', emoji: '🎁', rarity: 'SR',  weight:  7 },
+      { id: 5, name: '200元娛樂點', emoji: '💸', rarity: 'SR',  weight:  3 },
+      { id: 6, name: '飲料卷',      emoji: '🥤', rarity: 'SSR', weight:  1 },
+    ],
     lastDailyReset: todayStr(),
     lastWeeklyReset: weekStr(),
     lastModified: Date.now(),
@@ -1120,17 +1622,14 @@ function saveState() {
 }
 
 // === LEDGER ===
-function addLedger(desc, gold, gem, type) {
-  // gold/gem are positive amounts; type is 'income' or 'expense'
+function addLedger(desc, gold, gem, type, countsAsGold = true, category = null, accountId = null, fromAccountId = null, toAccountId = null) {
   state.ledger.unshift({
     id: Date.now() + Math.random(),
     ts: Date.now(),
-    desc,
-    gold: gold || 0,
-    gem: gem || 0,
-    type,
+    desc, gold: gold || 0, gem: gem || 0,
+    type, countsAsGold, category, accountId,
+    fromAccountId, toAccountId,
   });
-  // Cap to last 1000 entries to keep storage manageable
   if (state.ledger.length > 1000) state.ledger.length = 1000;
 }
 
@@ -1159,12 +1658,13 @@ function periodStart(p) {
 }
 
 function renderLedger() {
+  renderAccountOverview();
   const since = periodStart(ledgerPeriod);
   const filtered = state.ledger.filter(e => e.ts >= since);
 
-  // Stats
+  // Stats — only count entries that affect the gold balance
   let incomeG = 0, incomeM = 0, expG = 0, expM = 0;
-  filtered.forEach(e => {
+  filtered.filter(e => e.countsAsGold !== false).forEach(e => {
     if (e.type === 'income') { incomeG += e.gold; incomeM += e.gem; }
     else { expG += e.gold; expM += e.gem; }
   });
@@ -1209,9 +1709,9 @@ function renderLedger() {
       label += ` (${days[date.getDay()]})`;
     }
 
-    // Day total
+    // Day total (only entries that count toward gold balance)
     let dayG = 0, dayM = 0;
-    entries.forEach(e => {
+    entries.filter(e => e.countsAsGold !== false).forEach(e => {
       const sign = e.type === 'income' ? 1 : -1;
       dayG += sign * e.gold;
       dayM += sign * e.gem;
@@ -1232,11 +1732,19 @@ function renderLedger() {
           const parts = [];
           if (e.gold) parts.push(`${sign}${e.gold}💰`);
           if (e.gem) parts.push(`${sign}${e.gem}💎`);
+          const noCount = e.countsAsGold === false
+            ? `<span class="cat-tag">不計入</span>` : '';
+          const catLabel = e.category
+            ? `<span class="cat-tag">${escapeHtml(e.category)}</span>` : '';
+          const acct = e.accountId
+            ? state.accounts.find(a => a.id === e.accountId) : null;
+          const acctLabel = acct
+            ? `<span class="cat-tag">${acct.emoji}${escapeHtml(acct.name)}</span>` : '';
           return `
             <div class="ledger-entry">
               <div class="ledger-time">${time}</div>
-              <div class="ledger-desc">${escapeHtml(e.desc)}</div>
-              <div class="ledger-amount ${cls}">${parts.join(' ')}</div>
+              <div class="ledger-desc">${escapeHtml(e.desc)}${catLabel}${acctLabel}${noCount}</div>
+              <div class="ledger-amount ${cls}" style="${e.countsAsGold === false ? 'opacity:0.5' : ''}">${parts.join(' ')}</div>
               <button class="ledger-del" onclick="deleteLedgerEntry(${e.id})" title="刪除">✕</button>
             </div>
           `;
@@ -1252,11 +1760,120 @@ function deleteLedgerEntry(id) {
   saveState(); renderLedger();
 }
 
+// === CATEGORIES & ACCOUNTS ===
+const CATEGORIES = {
+  expense: [
+    '🍴飲食','🛍日用品','🚆交通','💡水電瓦斯','📱電話網路',
+    '🏠居家','👕服飾','🚗汽車','🎮娛樂','💄美容美髮',
+    '🍺交際應酬','📖學習深造','☂保險','💸稅金','💊醫療保健',
+    '🎓教育','🏦手續費',
+  ],
+  income: [
+    '💵工資','⭐獎金','📈投資','💼副業','🧧家中補給','📦其他',
+  ],
+};
+
+let selectedCategory = null;
+let selectedAccount  = null;
+
+function onTypeChange(type) {
+  const isTransfer = type === 'transfer';
+  document.getElementById('normalFields').style.display   = isTransfer ? 'none' : '';
+  document.getElementById('transferFields').style.display = isTransfer ? '' : 'none';
+  if (isTransfer) {
+    populateTransferSelects();
+  } else {
+    renderCategoryGrid(type);
+  }
+}
+
+function renderCategoryGrid(type) {
+  selectedCategory = null;
+  const cats = CATEGORIES[type] || CATEGORIES.expense;
+  document.getElementById('catGrid').innerHTML = cats.map(c => `
+    <button type="button" class="cat-btn" data-cat="${escapeHtml(c)}" onclick="selectCat(this)">
+      ${escapeHtml(c)}
+    </button>
+  `).join('');
+}
+
+function populateTransferSelects() {
+  const opts = state.accounts.map(a =>
+    `<option value="${a.id}">${a.emoji} ${escapeHtml(a.name)}</option>`
+  ).join('');
+  document.getElementById('eFromAcct').innerHTML = opts;
+  document.getElementById('eToAcct').innerHTML   = opts;
+  if (state.accounts.length >= 2) {
+    document.getElementById('eToAcct').value = state.accounts[1].id;
+  }
+}
+
+function selectCat(btn) {
+  const val = btn.dataset.cat;
+  selectedCategory = selectedCategory === val ? null : val;
+  document.querySelectorAll('.cat-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.cat === selectedCategory)
+  );
+}
+
+function renderAccountPicker() {
+  selectedAccount = null;
+  document.getElementById('acctRow').innerHTML =
+    state.accounts.map(a => `
+      <button type="button" class="acct-btn" data-aid="${a.id}" onclick="selectAcct(this)">
+        ${a.emoji} ${escapeHtml(a.name)}
+      </button>
+    `).join('') +
+    `<button type="button" class="acct-btn add-acct" onclick="addAccount()">＋ 新增</button>`;
+}
+
+function selectAcct(btn) {
+  const id = parseInt(btn.dataset.aid);
+  selectedAccount = selectedAccount === id ? null : id;
+  document.querySelectorAll('.acct-btn:not(.add-acct)').forEach(b =>
+    b.classList.toggle('active', parseInt(b.dataset.aid) === selectedAccount)
+  );
+}
+
+function addAccount() {
+  const name = prompt('帳戶名稱（例：郵局）');
+  if (!name || !name.trim()) return;
+  const emoji = prompt('圖示 emoji（例：🏛）', '🏛') || '🏛';
+  state.accounts.push({ id: Date.now(), name: name.trim(), emoji: emoji.trim() });
+  saveState();
+  renderAccountPicker();
+}
+
+let eCounts = true;
+
+function setECounts(val) {
+  eCounts = val;
+  const btn = document.getElementById('eCountsBtn');
+  if (eCounts) {
+    btn.textContent = '✓ 計入';
+    btn.style.background = 'var(--hp)';
+    btn.style.borderColor = '#2e7d32';
+    btn.style.color = 'var(--bg-deep)';
+  } else {
+    btn.textContent = '✗ 不計入（僅記錄）';
+    btn.style.background = 'var(--bg-deep)';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.color = 'var(--text-muted)';
+  }
+}
+
+function toggleECounts() { setECounts(!eCounts); }
+
 function openAddEntry() {
   document.getElementById('eDesc').value = '';
   document.getElementById('eGold').value = '0';
   document.getElementById('eGem').value = '0';
-  document.getElementById('eType').value = 'income';
+  document.getElementById('eType').value = 'expense';
+  setECounts(true);
+  document.getElementById('normalFields').style.display   = '';
+  document.getElementById('transferFields').style.display = 'none';
+  renderCategoryGrid('expense');
+  renderAccountPicker();
   document.getElementById('entryModalBg').classList.add('show');
   setTimeout(() => document.getElementById('eDesc').focus(), 100);
 }
@@ -1266,23 +1883,42 @@ function closeEntryModal() {
 }
 
 function saveEntry() {
+  const type = document.getElementById('eType').value;
+  const gold = Math.abs(parseInt(document.getElementById('eGold').value) || 0);
+  const gem  = Math.abs(parseInt(document.getElementById('eGem').value)  || 0);
+
+  // Transfer: build auto-description from account names, always 不計入
+  if (type === 'transfer') {
+    if (!gold && !gem) { alert('金幣或抽卡至少要填一個'); return; }
+    const fromId  = parseInt(document.getElementById('eFromAcct').value);
+    const toId    = parseInt(document.getElementById('eToAcct').value);
+    if (fromId === toId) { alert('從帳戶和到帳戶不能相同'); return; }
+    const fromA = state.accounts.find(a => a.id === fromId);
+    const toA   = state.accounts.find(a => a.id === toId);
+    const desc  = document.getElementById('eDesc').value.trim() ||
+                  `${fromA.emoji}${fromA.name} → ${toA.emoji}${toA.name}`;
+    addLedger(desc, gold, gem, 'expense', false, '↔轉帳', null, fromId, toId);
+    saveState(); render(); closeEntryModal();
+    toast('已記錄轉帳');
+    return;
+  }
+
   const desc = document.getElementById('eDesc').value.trim();
   if (!desc) { alert('請輸入說明'); return; }
-  const gold = Math.abs(parseInt(document.getElementById('eGold').value) || 0);
-  const gem = Math.abs(parseInt(document.getElementById('eGem').value) || 0);
-  const type = document.getElementById('eType').value;
   if (!gold && !gem) { alert('金幣或抽卡至少要填一個'); return; }
 
-  if (type === 'income') {
-    state.gold += gold;
-    state.gem += gem;
-  } else {
-    if (state.gold < gold) { alert('金幣不夠扣！'); return; }
-    if (state.gem < gem) { alert('抽卡資源不夠扣！'); return; }
-    state.gold -= gold;
-    state.gem -= gem;
+  if (eCounts) {
+    if (type === 'income') {
+      state.gold += gold;
+      state.gem  += gem;
+    } else {
+      if (state.gold < gold) { alert('金幣不夠扣！'); return; }
+      if (state.gem  < gem)  { alert('抽卡資源不夠扣！'); return; }
+      state.gold -= gold;
+      state.gem  -= gem;
+    }
   }
-  addLedger(desc, gold, gem, type);
+  addLedger(desc, gold, gem, type, eCounts, selectedCategory, selectedAccount);
   saveState(); render(); closeEntryModal();
   toast(type === 'income' ? '已記錄收入' : '已記錄支出');
 }
@@ -1317,11 +1953,75 @@ function checkResets() {
   saveState();
 }
 
+// === TITLES ===
+const TITLES = [
+  { minLevel:   1, name: '旅人',   emoji: '🚶' },
+  { minLevel:   5, name: '冒險者', emoji: '🗺' },
+  { minLevel:  10, name: '劍士',   emoji: '🗡' },
+  { minLevel:  20, name: '騎士',   emoji: '🛡' },
+  { minLevel:  30, name: '勇士',   emoji: '⚔' },
+  { minLevel:  40, name: '鬥士',   emoji: '🥊' },
+  { minLevel:  50, name: '勇者',   emoji: '⚡' },
+  { minLevel:  60, name: '精銳',   emoji: '🔥' },
+  { minLevel:  70, name: '戰士',   emoji: '🪖' },
+  { minLevel:  80, name: '菁英',   emoji: '💪' },
+  { minLevel:  90, name: '王者',   emoji: '👑' },
+  { minLevel: 100, name: '英雄',   emoji: '🌟' },
+  { minLevel: 120, name: '傳奇',   emoji: '💫' },
+  { minLevel: 140, name: '神話',   emoji: '🌙' },
+  { minLevel: 160, name: '半神',   emoji: '🌠' },
+  { minLevel: 180, name: '守護神', emoji: '🌈' },
+  { minLevel: 200, name: '神',     emoji: '✨' },
+  { minLevel: 225, name: '戰神',   emoji: '🌩' },
+  { minLevel: 250, name: '至高神', emoji: '🔆' },
+  { minLevel: 275, name: '創世神', emoji: '🌌' },
+  { minLevel: 300, name: '永恆',   emoji: '♾' },
+];
+
+function getActiveTitle() {
+  const unlocked = TITLES.filter(t => t.minLevel <= state.level);
+  const base = unlocked.length ? unlocked[unlocked.length - 1] : TITLES[0];
+  if (state.activeTitle) {
+    const found = TITLES.find(t => t.name === state.activeTitle);
+    if (found && found.minLevel <= state.level) return found;
+  }
+  return base;
+}
+
+function openTitleModal() {
+  renderTitleGrid();
+  document.getElementById('titleModalBg').classList.add('show');
+}
+function closeTitleModal() { document.getElementById('titleModalBg').classList.remove('show'); }
+
+function renderTitleGrid() {
+  const active = getActiveTitle();
+  document.getElementById('titleGrid').innerHTML = TITLES.map(t => {
+    const unlocked = t.minLevel <= state.level;
+    const isActive = t.name === active.name;
+    const cls = ['title-card', isActive ? 'active' : '', unlocked ? '' : 'locked'].filter(Boolean).join(' ');
+    const click = unlocked ? `onclick="selectTitle('${t.name}')"` : '';
+    return `<div class="${cls}" ${click}>
+      <div class="title-card-emoji">${t.emoji}</div>
+      <div class="title-card-name">${t.name}</div>
+      <div class="title-card-level">Lv.${t.minLevel}${unlocked ? '' : ' 🔒'}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectTitle(name) {
+  state.activeTitle = name;
+  saveState(); render();
+  renderTitleGrid();
+}
+
 // === RENDER ===
 function render() {
   document.getElementById('charName').textContent = state.name;
   document.getElementById('avatar').textContent = state.avatar;
   document.getElementById('levelBadge').textContent = `LV.${state.level}`;
+  const at = getActiveTitle();
+  document.getElementById('titleBadge').textContent = `${at.emoji} ${at.name}`;
   const need = xpForLevel(state.level);
   document.getElementById('xpText').textContent = `${state.xp} / ${need} XP`;
   document.getElementById('xpFill').style.width = Math.min(100, state.xp / need * 100) + '%';
@@ -1336,31 +2036,60 @@ function render() {
   renderList('event');
 }
 
+// === WEEKLY SECTION TOGGLE (inside daily panel) ===
+let weeklyExpanded = true;
+function toggleWeeklySection() {
+  weeklyExpanded = !weeklyExpanded;
+  document.getElementById('weeklySection').style.display = weeklyExpanded ? '' : 'none';
+  document.getElementById('weeklyArrow').textContent = weeklyExpanded ? '▾' : '▸';
+}
+
 function renderList(type) {
   const el = document.getElementById(type + 'List');
-  const list = state.quests[type];
+  if (!el) return;
+  let list = state.quests[type];
+
+  // For event type, filter by selected calendar day if set
+  if (type === 'event' && calSelectedDay) {
+    const { y, m, d } = calSelectedDay;
+    const selStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    list = list.filter(q => q.date === selStr);
+  }
+
   if (!list.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📜</div>還沒有任務，點上方「+ 新增」開始吧</div>`;
+    const msg = (type === 'event' && calSelectedDay)
+      ? '這一天沒有活動任務'
+      : '還沒有任務，點上方「+ 新增」開始吧';
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📜</div>${msg}</div>`;
     return;
   }
-  el.innerHTML = list.map(q => `
+  el.innerHTML = list.map(q => {
+    let datePart = '';
+    if (type === 'event' && q.date) {
+      datePart = `<span style="font-size:13px;color:var(--text-muted);border:1px solid var(--border);padding:1px 5px;border-radius:2px;margin-left:6px;">📅${q.date}</span>`;
+    }
+    return `
     <div class="quest ${q.done ? 'done' : ''}">
       <div class="quest-check" onclick="toggleQuest('${type}', ${q.id})">${q.done ? '✓' : ''}</div>
       <div class="quest-body">
-        <div class="quest-name">${escapeHtml(q.name)}</div>
-        <div class="quest-rewards">
-          ${q.gold ? `<span class="reward-gold">+${q.gold}💰</span> ` : ''}
-          ${q.gem ? `<span class="reward-gem">+${q.gem}💎</span> ` : ''}
-          ${q.xp ? `<span class="reward-xp">+${q.xp}⚡</span>` : ''}
-        </div>
+        <div class="quest-name">${escapeHtml(q.name)}${datePart}</div>
+        ${rewardHtml(q.gem, q.xp)}
       </div>
       <button class="quest-del" onclick="deleteQuest('${type}', ${q.id})" title="刪除">✕</button>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function rewardHtml(gem, xp) {
+  const parts = [];
+  if (gem) parts.push(`<span class="reward-gem">💎+${gem}</span>`);
+  if (xp)  parts.push(`<span class="reward-xp">⚡+${xp}</span>`);
+  return parts.length ? `<div class="quest-rewards">${parts.join(' ')}</div>` : '';
 }
 
 // === QUEST ACTIONS ===
@@ -1370,20 +2099,16 @@ function toggleQuest(type, id) {
   if (q.done) {
     // undo
     q.done = false;
-    state.gold = Math.max(0, state.gold - q.gold);
-    state.gem = Math.max(0, state.gem - q.gem);
+    state.gem = Math.max(0, state.gem - (q.gem || 0));
     state.xp = Math.max(0, state.xp - q.xp);
-    if (q.gold || q.gem) addLedger(`[取消] ${q.name}`, q.gold, q.gem, 'expense');
   } else {
     q.done = true;
-    state.gold += q.gold;
-    state.gem += q.gem;
+    state.gem += (q.gem || 0);
     addXp(q.xp);
-    if (q.gold || q.gem) {
-      const label = type === 'daily' ? '每日' : type === 'weekly' ? '每週' : '活動';
-      addLedger(`[${label}] ${q.name}`, q.gold, q.gem, 'income');
-    }
-    toast(`+${q.gold}💰 +${q.gem}💎 +${q.xp}⚡`);
+    const parts = [];
+    if (q.gem) parts.push(`+${q.gem}💎`);
+    if (q.xp)  parts.push(`+${q.xp}⚡`);
+    toast(parts.join(' ') || '✓');
     if (type === 'event') {
       // event auto-removes after a moment
       setTimeout(() => {
@@ -1400,6 +2125,7 @@ function addXp(amount) {
   while (state.xp >= xpForLevel(state.level)) {
     state.xp -= xpForLevel(state.level);
     state.level += 1;
+    state.statPoints = (state.statPoints || 0) + 1;
     showLevelUp();
   }
 }
@@ -1410,15 +2136,243 @@ function deleteQuest(type, id) {
   saveState(); render();
 }
 
+// === TODO ===
+let todoShowDoneFilter = false;
+
+function toggleTodoDoneFilter() {
+  todoShowDoneFilter = !todoShowDoneFilter;
+  const btn = document.getElementById('todoShowDone');
+  if (btn) btn.classList.toggle('active', todoShowDoneFilter);
+  renderTodos();
+}
+
+function renderTodos() {
+  const el = document.getElementById('todoList');
+  if (!el) return;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const todayStr2 = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+  let items = state.todos || [];
+  if (!todoShowDoneFilter) items = items.filter(t => !t.done);
+
+  if (!items.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📋</div>還沒有待辦項目，新增一個吧！</div>`;
+    return;
+  }
+
+  // Sort: undone first, then by dueDate asc, then createdAt asc
+  items = [...items].sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+    if (a.dueDate) return -1;
+    if (b.dueDate) return 1;
+    return (a.createdAt || 0) - (b.createdAt || 0);
+  });
+
+  el.innerHTML = items.map(item => {
+    let duePart = '';
+    if (item.dueDate) {
+      const overdue = !item.done && item.dueDate < todayStr2;
+      const color = overdue ? 'var(--danger)' : 'var(--text-muted)';
+      duePart = `<span style="font-size:13px;color:${color};border:1px solid ${color};padding:1px 5px;border-radius:2px;margin-left:6px;">📅${item.dueDate}</span>`;
+    }
+    const rewardStr = rewardHtml(item.gem, item.xp);
+    return `
+      <div class="quest ${item.done ? 'done' : ''}">
+        <div class="quest-check" onclick="toggleTodo(${item.id})">${item.done ? '✓' : ''}</div>
+        <div class="quest-body">
+          <div class="quest-name">${escapeHtml(item.title)}${duePart}</div>
+          ${rewardStr}
+        </div>
+        <button class="quest-del" onclick="deleteTodo(${item.id})" title="刪除">✕</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function quickAddTodo() {
+  const input = document.getElementById('todoInput');
+  const dateInput = document.getElementById('todoDate');
+  const title = input ? input.value.trim() : '';
+  if (!title) { alert('請輸入待辦項目名稱'); return; }
+  const dueDate = dateInput ? (dateInput.value || null) : null;
+  if (!state.todos) state.todos = [];
+  state.todos.push({ id: Date.now(), title, gem: 0, xp: 0, dueDate, done: false, createdAt: Date.now() });
+  if (input) input.value = '';
+  if (dateInput) dateInput.value = '';
+  saveState();
+  renderTodos();
+}
+
+function openAddTodo() {
+  const dateInput = document.getElementById('todoDate');
+  const titleInput = document.getElementById('todoInput');
+  document.getElementById('tdName').value = titleInput ? titleInput.value.trim() : '';
+  document.getElementById('tdDate').value = dateInput ? (dateInput.value || '') : '';
+  document.getElementById('tdGem').value = '10';
+  document.getElementById('tdXp').value = '10';
+  document.getElementById('todoModalBg').classList.add('show');
+  setTimeout(() => document.getElementById('tdName').focus(), 100);
+}
+
+function closeTodoModal() {
+  document.getElementById('todoModalBg').classList.remove('show');
+}
+
+function saveTodo() {
+  const title = document.getElementById('tdName').value.trim();
+  if (!title) { alert('請輸入項目名稱'); return; }
+  const dueDate = document.getElementById('tdDate').value || null;
+  const gem = parseInt(document.getElementById('tdGem').value) || 0;
+  const xp  = parseInt(document.getElementById('tdXp').value)  || 0;
+  if (!state.todos) state.todos = [];
+  state.todos.push({ id: Date.now(), title, gem, xp, dueDate, done: false, createdAt: Date.now() });
+  // Clear the quick-add inputs too
+  const titleInput = document.getElementById('todoInput');
+  const dateInput  = document.getElementById('todoDate');
+  if (titleInput) titleInput.value = '';
+  if (dateInput)  dateInput.value  = '';
+  saveState();
+  renderTodos();
+  closeTodoModal();
+}
+
+function toggleTodo(id) {
+  if (!state.todos) state.todos = [];
+  const item = state.todos.find(t => t.id === id);
+  if (!item) return;
+  if (item.done) {
+    item.done = false;
+    state.gem = Math.max(0, state.gem - (item.gem || 0));
+    state.xp  = Math.max(0, state.xp - item.xp);
+  } else {
+    item.done = true;
+    state.gem += (item.gem || 0);
+    addXp(item.xp);
+    const parts = ['✓ 完成！'];
+    if (item.gem) parts.push(`+${item.gem}💎`);
+    if (item.xp)  parts.push(`+${item.xp}⚡`);
+    toast(parts.join(' '));
+  }
+  saveState();
+  render();
+  renderTodos();
+}
+
+function deleteTodo(id) {
+  if (!confirm('確定刪除這個待辦項目？')) return;
+  state.todos = (state.todos || []).filter(t => t.id !== id);
+  saveState();
+  renderTodos();
+}
+
+// === CALENDAR ===
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth(); // 0-indexed
+let calSelectedDay = null; // { y, m, d } or null
+
+function calPrev() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+function calNext() {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const titleEl = document.getElementById('calTitle');
+  const gridEl  = document.getElementById('calGrid');
+  if (!titleEl || !gridEl) return;
+
+  const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  titleEl.textContent = `${calYear} ${monthNames[calMonth]}`;
+
+  const today = new Date();
+  const todayY = today.getFullYear(), todayM = today.getMonth(), todayD = today.getDate();
+
+  // Collect dates that have events
+  const eventDates = new Set();
+  (state.quests.event || []).forEach(q => {
+    if (q.date) eventDates.add(q.date);
+  });
+
+  // First day of month (0=Sun)
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
+
+  // Day-of-week headers (Mon-Sun)
+  const dayHeaders = ['一','二','三','四','五','六','日'];
+  let html = dayHeaders.map(d => `<div class="cal-header">${d}</div>`).join('');
+
+  // Leading blanks (adjust: 0=Sun → treat as 7)
+  const startOffset = (firstDay === 0 ? 7 : firstDay) - 1;
+  for (let i = startOffset - 1; i >= 0; i--) {
+    const d = daysInPrev - i;
+    html += `<div class="cal-day other-month">${d}</div>`;
+  }
+
+  // Days of current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday    = calYear === todayY && calMonth === todayM && d === todayD;
+    const isSelected = calSelectedDay && calSelectedDay.y === calYear && calSelectedDay.m === calMonth && calSelectedDay.d === d;
+    const hasEvent   = eventDates.has(dateStr);
+    const cls = ['cal-day', isToday ? 'today' : '', isSelected ? 'selected' : '', hasEvent ? 'has-event' : ''].filter(Boolean).join(' ');
+    html += `<div class="${cls}" onclick="selectCalDay(${calYear},${calMonth},${d})">${d}</div>`;
+  }
+
+  // Trailing blanks
+  const totalCells = startOffset + daysInMonth;
+  const remainder  = totalCells % 7;
+  if (remainder !== 0) {
+    const trailing = 7 - remainder;
+    for (let i = 1; i <= trailing; i++) {
+      html += `<div class="cal-day other-month">${i}</div>`;
+    }
+  }
+
+  gridEl.innerHTML = html;
+  renderList('event');
+}
+
+function selectCalDay(y, m, d) {
+  if (calSelectedDay && calSelectedDay.y === y && calSelectedDay.m === m && calSelectedDay.d === d) {
+    calSelectedDay = null; // deselect
+  } else {
+    calSelectedDay = { y, m, d };
+  }
+  renderCalendar();
+}
+
 // === MODAL ===
 let editingType = null;
 function openAddQuest(type) {
   editingType = type;
   document.getElementById('modalTitle').textContent = `新增${type === 'daily' ? '每日' : type === 'weekly' ? '每週' : '活動'}任務`;
   document.getElementById('qName').value = '';
-  document.getElementById('qGold').value = type === 'daily' ? 10 : type === 'weekly' ? 50 : 30;
-  document.getElementById('qGem').value = type === 'daily' ? 1 : type === 'weekly' ? 5 : 3;
+  document.getElementById('qGem').value = type === 'daily' ? 30 : type === 'weekly' ? 100 : 50;
   document.getElementById('qXp').value = type === 'daily' ? 20 : type === 'weekly' ? 80 : 50;
+  // Show/hide date field for event type
+  const dateField = document.getElementById('qDateField');
+  if (dateField) {
+    dateField.style.display = type === 'event' ? '' : 'none';
+    if (type === 'event') {
+      // Pre-fill from calendar selection if available
+      if (calSelectedDay) {
+        const { y, m, d } = calSelectedDay;
+        document.getElementById('qDate').value =
+          `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      } else {
+        document.getElementById('qDate').value = '';
+      }
+    }
+  }
   document.getElementById('modalBg').classList.add('show');
   setTimeout(() => document.getElementById('qName').focus(), 100);
 }
@@ -1430,13 +2384,16 @@ function closeModal() {
 function saveQuest() {
   const name = document.getElementById('qName').value.trim();
   if (!name) { alert('請輸入任務名稱'); return; }
-  const gold = parseInt(document.getElementById('qGold').value) || 0;
   const gem = parseInt(document.getElementById('qGem').value) || 0;
   const xp = parseInt(document.getElementById('qXp').value) || 0;
-  state.quests[editingType].push({
-    id: Date.now(), name, gold, gem, xp, done: false
-  });
+  const questObj = { id: Date.now(), name, gem, xp, done: false };
+  if (editingType === 'event') {
+    const dateVal = document.getElementById('qDate').value;
+    if (dateVal) questObj.date = dateVal;
+  }
+  state.quests[editingType].push(questObj);
   saveState(); render(); closeModal();
+  if (editingType === 'event') renderCalendar();
 }
 
 // === TABS ===
@@ -1444,72 +2401,561 @@ document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
     t.classList.add('active');
-    ['daily','weekly','event','gacha','ledger'].forEach(name => {
+    ['daily','todo','event','gacha','ledger'].forEach(name => {
       document.getElementById('panel-' + name).style.display = name === t.dataset.tab ? 'block' : 'none';
     });
     if (t.dataset.tab === 'ledger') renderLedger();
+    if (t.dataset.tab === 'todo') renderTodos();
+    if (t.dataset.tab === 'event') renderCalendar();
+    if (t.dataset.tab === 'gacha') renderInventory();
   });
 });
 
 // === GACHA ===
-const GACHA_PRIZES = [
-  { name: '⭐ 普通獎勵：放空5分鐘', weight: 40 },
-  { name: '✨ 不錯：聽一首喜歡的歌', weight: 30 },
-  { name: '💫 好運：給自己一個小休息', weight: 20 },
-  { name: '🌟 稀有：解鎖一個小確幸', weight: 8 },
-  { name: '👑 SSR！今日好運加倍！', weight: 2 },
-];
+const RARITY_LABEL = { N: '普通', R: '稀有', SR: '超稀有', SSR: '傳說' };
+const RARITY_COLOR = { N: '#b0bec5', R: '#42a5f5', SR: '#ab47bc', SSR: '#ffd54f' };
+
+function getGachaPrizes() {
+  return (state.gachaPrizes && state.gachaPrizes.length) ? state.gachaPrizes : defaultState().gachaPrizes;
+}
 
 function pickPrize() {
-  const total = GACHA_PRIZES.reduce((s, p) => s + p.weight, 0);
+  const prizes = getGachaPrizes();
+  const total = prizes.reduce((s, p) => s + (p.weight || 1), 0);
   let r = Math.random() * total;
-  for (const p of GACHA_PRIZES) {
-    r -= p.weight;
-    if (r <= 0) return p.name;
-  }
-  return GACHA_PRIZES[0].name;
+  for (const p of prizes) { r -= (p.weight || 1); if (r <= 0) return p; }
+  return prizes[0];
 }
 
 function doGacha() {
-  const cost = parseInt(document.getElementById('gachaCost').value) || 0;
-  if (cost < 1) { alert('金幣花費要大於 0'); return; }
-  if (state.gold < cost) { toast('💰 金幣不夠！'); return; }
-  if (state.gem < 1) { toast('💎 抽卡資源不夠！'); return; }
-
-  state.gold -= cost;
-  state.gem -= 1;
-  addLedger(`[抽卡] 抽一次`, cost, 1, 'expense');
+  if (state.gem < 50) { toast('💎 寶石不夠！需要 50 💎'); return; }
+  state.gem -= 50;
+  addLedger(`[抽卡] 抽一次`, 0, 50, 'expense');
   saveState(); render();
 
   const machine = document.getElementById('gachaMachine');
   const result = document.getElementById('gachaResult');
   const btn = document.getElementById('gachaBtn');
   machine.classList.add('spinning');
-  result.classList.remove('win');
+  result.className = 'gacha-result';
   result.textContent = '抽卡中...';
   btn.disabled = true;
 
   setTimeout(() => {
     machine.classList.remove('spinning');
     const prize = pickPrize();
-    result.textContent = prize;
-    result.classList.add('win');
+    if (!prize.noItem) {
+      if (!state.inventory) state.inventory = [];
+      const existing = state.inventory.find(i => i.name === prize.name);
+      if (existing) { existing.count++; } else {
+        state.inventory.push({ id: Date.now(), name: prize.name, emoji: prize.emoji || '🎁', rarity: prize.rarity || 'N', count: 1 });
+      }
+    }
+    saveState();
+    const col = RARITY_COLOR[prize.rarity] || RARITY_COLOR.N;
+    const lbl = RARITY_LABEL[prize.rarity] || prize.rarity || 'N';
+    result.className = `gacha-result win rarity-${prize.rarity || 'N'}`;
+    result.innerHTML = `${prize.emoji || '🎁'} ${escapeHtml(prize.name)}<br><span style="font-size:12px;color:${col};border:1px solid ${col};padding:1px 8px;border-radius:2px;">${lbl}</span>`;
     btn.disabled = false;
+    renderInventory();
   }, 1200);
 }
 
+// === INVENTORY ===
+let invExpanded = true;
+function toggleInventory() {
+  invExpanded = !invExpanded;
+  document.getElementById('inventoryList').style.display = invExpanded ? '' : 'none';
+  document.getElementById('invArrow').textContent = invExpanded ? '▾' : '▸';
+}
+
+function renderInventory() {
+  const avEl = document.getElementById('entPointsAvail');
+  if (avEl) avEl.textContent = getInventoryEntPoints();
+  const el = document.getElementById('inventoryList');
+  if (!el) return;
+  const items = state.inventory || [];
+  if (!items.length) {
+    el.innerHTML = `<div style="color:var(--text-muted);font-size:13px;padding:8px 0;">還沒有物品，去抽卡吧！</div>`;
+    return;
+  }
+  el.innerHTML = `<div class="inv-grid">${items.map(item => {
+    const col = RARITY_COLOR[item.rarity] || RARITY_COLOR.N;
+    return `<div class="inv-item" style="border-color:${col};">
+      ${item.count > 1 ? `<div class="inv-count">${item.count}</div>` : ''}
+      <span>${item.emoji || '🎁'}</span>
+      <span style="font-size:13px;">${escapeHtml(item.name)}</span>
+      <button class="inv-use" onclick="useItem(${item.id})">使用</button>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+function useItem(id) {
+  if (!state.inventory) return;
+  const item = state.inventory.find(i => i.id === id);
+  if (!item) return;
+  item.count--;
+  if (item.count <= 0) state.inventory = state.inventory.filter(i => i.id !== id);
+  saveState();
+  renderInventory();
+  toast(`${item.emoji || ''} 已使用 ${item.name}`);
+}
+
+// === ODDS TABLE ===
+let oddsExpanded = false;
+function toggleOddsTable() {
+  oddsExpanded = !oddsExpanded;
+  const el = document.getElementById('oddsTable');
+  const arrow = document.getElementById('oddsArrow');
+  if (el) el.style.display = oddsExpanded ? '' : 'none';
+  if (arrow) arrow.textContent = oddsExpanded ? '▾' : '▸';
+  if (oddsExpanded) renderOddsTable();
+}
+
+function renderOddsTable() {
+  const el = document.getElementById('oddsTable');
+  if (!el) return;
+  const prizes = getGachaPrizes();
+  const total = prizes.reduce((s, p) => s + (p.weight || 1), 0);
+  el.innerHTML = prizes.map(p => {
+    const pct = ((p.weight || 1) / total * 100).toFixed(1);
+    const col = RARITY_COLOR[p.rarity] || RARITY_COLOR.N;
+    const lbl = RARITY_LABEL[p.rarity] || p.rarity || '';
+    return `<div class="odds-row">
+      <span>${p.emoji || '🎁'}</span>
+      <span style="flex:1;">${escapeHtml(p.name)}</span>
+      <span class="odds-badge" style="color:${col};border-color:${col};">${lbl}</span>
+      <span style="font-size:13px;color:var(--text-muted);min-width:42px;text-align:right;">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+// === PRIZE EDITOR ===
+let editingPrizes = [];
+function openEditPrizes() {
+  editingPrizes = JSON.parse(JSON.stringify(getGachaPrizes()));
+  renderPrizeEditor();
+  document.getElementById('prizeModalBg').classList.add('show');
+}
+function closePrizeModal() { document.getElementById('prizeModalBg').classList.remove('show'); }
+
+function renderPrizeEditor() {
+  const el = document.getElementById('prizeEditor');
+  const total = editingPrizes.reduce((s, p) => s + (parseInt(p.weight) || 0), 0);
+  el.innerHTML = editingPrizes.map((p, i) => `
+    <div class="prize-row" data-idx="${i}">
+      <input type="text" value="${escapeHtml(p.emoji || '🎁')}" maxlength="4" style="width:38px;text-align:center;" placeholder="📦">
+      <input type="text" value="${escapeHtml(p.name)}" placeholder="獎項名稱" style="flex:1;min-width:80px;">
+      <select>${['N','R','SR','SSR'].map(r => `<option value="${r}"${p.rarity===r?' selected':''}>${RARITY_LABEL[r]}</option>`).join('')}</select>
+      <input type="number" value="${p.weight || 10}" min="1" title="權重">
+      <button class="quest-del" onclick="removePrizeRow(${i})" title="刪除">✕</button>
+    </div>`).join('') +
+    `<div id="prizeTotal" style="font-size:12px;color:var(--text-muted);margin-top:4px;">總權重：${total}</div>`;
+}
+
+function addPrizeRow() {
+  editingPrizes.push({ id: Date.now(), name: '', emoji: '🎁', rarity: 'N', weight: 10 });
+  renderPrizeEditor();
+}
+
+function removePrizeRow(idx) {
+  editingPrizes.splice(idx, 1);
+  renderPrizeEditor();
+}
+
+function savePrizes() {
+  const rows = document.querySelectorAll('#prizeEditor .prize-row');
+  const saved = [...rows].map(row => {
+    const ins = row.querySelectorAll('input, select');
+    return { id: Date.now() + Math.random(), emoji: ins[0].value.trim() || '🎁', name: ins[1].value.trim(), rarity: ins[2].value, weight: parseInt(ins[3].value) || 1 };
+  }).filter(p => p.name);
+  if (!saved.length) { alert('至少需要一個獎項'); return; }
+  state.gachaPrizes = saved;
+  saveState();
+  closePrizeModal();
+  if (oddsExpanded) renderOddsTable();
+  toast('獎池已更新！');
+}
+
 // === SPEND ===
-function spendGold() {
+function getInventoryEntPoints() {
+  return (state.inventory || []).reduce((sum, item) => {
+    const m = item.name.match(/^(\d+)元娛樂點$/);
+    return sum + (m ? parseInt(m[1]) * item.count : 0);
+  }, 0);
+}
+
+function consumeEntPoints(amount) {
+  const items = (state.inventory || [])
+    .filter(i => /^(\d+)元娛樂點$/.test(i.name))
+    .map(i => ({ item: i, val: parseInt(i.name.match(/^(\d+)/)[1]) }))
+    .sort((a, b) => a.val - b.val); // smallest first to minimize over-spend
+  let rem = amount;
+  for (const { item, val } of items) {
+    while (rem > 0 && item.count > 0) { item.count--; rem -= val; }
+  }
+  state.inventory = state.inventory.filter(i => i.count > 0);
+}
+
+function spendPoints() {
   const amt = parseInt(document.getElementById('spendAmount').value) || 0;
   if (amt < 1) { alert('請輸入金額'); return; }
-  if (state.gold < amt) { toast('💰 金幣不夠！'); return; }
-  const desc = prompt(`花了 ${amt} 💰 在哪？（可不填）`, '消費');
-  if (desc === null) return; // cancelled
-  state.gold -= amt;
-  addLedger(`[消費] ${desc.trim() || '消費'}`, amt, 0, 'expense');
+  const avail = getInventoryEntPoints();
+  if (avail < amt) { toast(`💸 娛樂點不足！目前有 ${avail} 元`); return; }
+  const desc = prompt(`花了 ${amt} 元娛樂點在哪？（可不填）`, '娛樂消費');
+  if (desc === null) return;
+  consumeEntPoints(amt);
   document.getElementById('spendAmount').value = '';
-  saveState(); render();
-  toast(`-${amt}💰 已扣除`);
+  saveState();
+  renderInventory();
+  toast(`🎉 使用 ${amt} 元娛樂點：${desc.trim() || '娛樂消費'}`);
+}
+
+// === RPG ===
+const MONSTERS = [
+  { id:1, name:'小史萊姆', emoji:'🟢', hp:30,  atk:4,  def:0,  gem:5,   xp:15,  tier:'E', rec:1  },
+  { id:2, name:'哥布林',   emoji:'👺', hp:80,  atk:10, def:3,  gem:12,  xp:35,  tier:'D', rec:10 },
+  { id:3, name:'骷髏兵',   emoji:'💀', hp:180, atk:20, def:8,  gem:28,  xp:75,  tier:'C', rec:25 },
+  { id:4, name:'獸人王',   emoji:'👹', hp:400, atk:35, def:15, gem:55,  xp:150, tier:'B', rec:50 },
+  { id:5, name:'冰龍',     emoji:'🐉', hp:800, atk:60, def:25, gem:100, xp:300, tier:'A', rec:80 },
+];
+
+const RPG_SKILLS = [
+  { id:'atk',   name:'普通攻擊', emoji:'⚔',  minLv:1,  cooldown:0, desc:'ATK×1 + 骰子' },
+  { id:'heavy', name:'重擊',     emoji:'💥',  minLv:15, cooldown:3, desc:'ATK×2 + 骰子×2' },
+  { id:'heal',  name:'治癒術',   emoji:'💚',  minLv:30, cooldown:4, desc:'回復 40% HP' },
+  { id:'ult',   name:'必殺技',   emoji:'⚡',  minLv:60, cooldown:6, desc:'ATK×3 無視防禦' },
+];
+
+const STAT_DEFS = [
+  { key:'str', name:'STR', label:'力量', color:'#e74c3c', desc:'每點 +5 ATK' },
+  { key:'int', name:'INT', label:'智力', color:'#3498db', desc:'每點 +4 MATK' },
+  { key:'vit', name:'VIT', label:'體力', color:'#2ecc71', desc:'每點 +20 HP / +1 DEF' },
+  { key:'agi', name:'AGI', label:'敏捷', color:'#f39c12', desc:'每點 +1% 閃避（上限40%）' },
+  { key:'crt', name:'CRT', label:'暴擊', color:'#9b59b6', desc:'每點 +1% 暴擊（上限50%，×1.5）' },
+];
+
+function getRpgStats() {
+  const lv = state.level;
+  const a = state.allocatedStats || {};
+  const str = a.str||0, int_ = a.int||0, vit = a.vit||0, agi = a.agi||0, crt = a.crt||0;
+  return {
+    maxHp: lv * 10 + 50 + vit * 20,
+    atk:   lv * 2  + 10 + str * 5,
+    matk:  10 + int_ * 4,
+    def:   lv      +  3 + vit,
+    dodge: Math.min(40, agi),
+    crit:  Math.min(50, crt),
+  };
+}
+
+let rpgBattle = null;
+
+function openRpg() {
+  document.getElementById('rpgPage').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  renderRpgLobby();
+}
+
+function closeRpg() {
+  document.getElementById('rpgPage').style.display = 'none';
+  document.body.style.overflow = '';
+  rpgBattle = null;
+}
+
+function renderRpgLobby() {
+  document.getElementById('rpgLobby').style.display = '';
+  document.getElementById('rpgBattle').style.display = 'none';
+  document.getElementById('rpgResult').style.display = 'none';
+  document.getElementById('rpgTickets').textContent = state.challengeTickets || 0;
+
+  const stats = getRpgStats();
+  document.getElementById('monsterGrid').innerHTML = MONSTERS.map(m => `
+    <div class="monster-card" onclick="startRpgBattle(${m.id})">
+      <div class="monster-tier tier-${m.tier}">${m.tier}</div>
+      <div class="monster-card-emoji">${m.emoji}</div>
+      <div class="monster-card-name">${m.name}</div>
+      <div class="monster-card-stats">HP ${m.hp} / ATK ${m.atk} / DEF ${m.def}</div>
+      <div class="monster-card-stats" style="color:var(--gem)">💎+${m.gem} ⚡+${m.xp}</div>
+      <div class="monster-rec">建議 Lv.${m.rec}</div>
+    </div>
+  `).join('');
+}
+
+function startRpgBattle(monsterId) {
+  if ((state.challengeTickets || 0) < 1) { toast('🎫 沒有挑戰卷了！'); return; }
+  const monster = MONSTERS.find(m => m.id === monsterId);
+  if (!monster) return;
+
+  state.challengeTickets = (state.challengeTickets || 0) - 1;
+  saveState();
+
+  const stats = getRpgStats();
+  rpgBattle = {
+    monster: { ...monster },
+    monsterHp: monster.hp,
+    playerHp: stats.maxHp,
+    playerMaxHp: stats.maxHp,
+    cooldowns: {},
+    log: [],
+  };
+
+  document.getElementById('rpgLobby').style.display = 'none';
+  document.getElementById('rpgBattle').style.display = '';
+  document.getElementById('rpgResult').style.display = 'none';
+  document.getElementById('bMonsterEmoji').textContent = monster.emoji;
+  document.getElementById('bMonsterName').textContent = monster.name;
+  document.getElementById('bPlayerEmoji').textContent = state.avatar;
+  document.getElementById('bPlayerName').textContent = state.name;
+
+  updateRpgHpBars();
+  renderRpgSkills();
+  rpgLog(`⚔ 與 ${monster.name} 的戰鬥開始！`);
+}
+
+function rpgLog(msg) {
+  rpgBattle.log.unshift(msg);
+  if (rpgBattle.log.length > 10) rpgBattle.log.pop();
+  const el = document.getElementById('battleLog');
+  if (el) el.innerHTML = rpgBattle.log.map(l => `<div class="log-entry">${l}</div>`).join('');
+}
+
+function updateRpgHpBars() {
+  const { monster, monsterHp, playerHp, playerMaxHp } = rpgBattle;
+  const mPct = Math.max(0, monsterHp / monster.hp * 100).toFixed(1);
+  const pPct = Math.max(0, playerHp / playerMaxHp * 100).toFixed(1);
+  document.getElementById('monsterHpFill').style.width = mPct + '%';
+  document.getElementById('monsterHpText').textContent = `${Math.max(0, monsterHp)} / ${monster.hp}`;
+  document.getElementById('playerHpFill').style.width = pPct + '%';
+  document.getElementById('playerHpText').textContent = `${Math.max(0, playerHp)} / ${playerMaxHp}`;
+}
+
+function renderRpgSkills() {
+  const grid = document.getElementById('skillGrid');
+  if (!grid) return;
+  grid.innerHTML = RPG_SKILLS.map(sk => {
+    const unlocked = state.level >= sk.minLv;
+    const cd = rpgBattle.cooldowns[sk.id] || 0;
+    const disabled = !unlocked || cd > 0;
+    const subText = cd > 0 ? `冷卻 ${cd} 回` : (!unlocked ? `Lv.${sk.minLv} 解鎖` : sk.desc);
+    return `<button class="skill-btn" ${disabled ? 'disabled' : `onclick="useRpgSkill('${sk.id}')"`}>
+      <div>${sk.emoji} ${sk.name}</div>
+      <span class="skill-desc">${subText}</span>
+    </button>`;
+  }).join('');
+}
+
+function rpgRollDice(sides = 6) {
+  return Math.floor(Math.random() * sides) + 1;
+}
+
+function useRpgSkill(skillId) {
+  if (!rpgBattle) return;
+  const skill = RPG_SKILLS.find(s => s.id === skillId);
+  if (!skill) return;
+
+  const stats = getRpgStats();
+  const d1 = rpgRollDice();
+  let playerDmg = 0;
+
+  // Tick cooldowns
+  for (const k of Object.keys(rpgBattle.cooldowns)) {
+    rpgBattle.cooldowns[k]--;
+    if (rpgBattle.cooldowns[k] <= 0) delete rpgBattle.cooldowns[k];
+  }
+  if (skill.cooldown > 0) rpgBattle.cooldowns[skillId] = skill.cooldown;
+
+  if (skillId === 'atk') {
+    playerDmg = Math.max(1, stats.atk + d1 - rpgBattle.monster.def);
+    document.getElementById('diceDisplay').textContent = `🎲${d1}`;
+    rpgLog(`${skill.emoji} 普攻 🎲${d1} → 造成 ${playerDmg} 傷害`);
+  } else if (skillId === 'heavy') {
+    const d2 = rpgRollDice();
+    playerDmg = Math.max(1, stats.atk * 2 + d1 + d2 - rpgBattle.monster.def);
+    document.getElementById('diceDisplay').textContent = `🎲${d1}+${d2}`;
+    rpgLog(`${skill.emoji} 重擊 🎲${d1}+${d2} → 造成 ${playerDmg} 傷害`);
+  } else if (skillId === 'heal') {
+    const healAmt = Math.floor(rpgBattle.playerMaxHp * 0.4);
+    rpgBattle.playerHp = Math.min(rpgBattle.playerMaxHp, rpgBattle.playerHp + healAmt);
+    document.getElementById('diceDisplay').textContent = `💚`;
+    rpgLog(`${skill.emoji} 治癒術 → 回復 ${healAmt} HP`);
+    updateRpgHpBars();
+    renderRpgSkills();
+    // Monster still attacks after heal
+    rpgMonsterAttack(stats);
+    return;
+  } else if (skillId === 'ult') {
+    playerDmg = Math.max(1, stats.atk * 3 + d1);
+    document.getElementById('diceDisplay').textContent = `🎲${d1}`;
+    rpgLog(`${skill.emoji} 必殺技 🎲${d1} → 造成 ${playerDmg} 傷害（無視防禦）`);
+  }
+
+  if (playerDmg > 0 && stats.crit > 0 && Math.random() * 100 < stats.crit) {
+    playerDmg = Math.floor(playerDmg * 1.5);
+    rpgLog(`💥 暴擊！傷害變為 ${playerDmg}`);
+  }
+
+  rpgBattle.monsterHp -= playerDmg;
+  updateRpgHpBars();
+
+  if (rpgBattle.monsterHp <= 0) {
+    showRpgResult(true);
+    return;
+  }
+
+  rpgMonsterAttack(stats);
+}
+
+function rpgMonsterAttack(stats) {
+  if (stats.dodge > 0 && Math.random() * 100 < stats.dodge) {
+    rpgLog(`${state.avatar} 閃避了攻擊！`);
+    renderRpgSkills();
+    return;
+  }
+  const md = rpgRollDice();
+  const mDmg = Math.max(1, rpgBattle.monster.atk + md - Math.floor(stats.def / 3));
+  rpgBattle.playerHp -= mDmg;
+  rpgLog(`${rpgBattle.monster.emoji} 反擊 🎲${md} → 你受到 ${mDmg} 傷害`);
+  updateRpgHpBars();
+  renderRpgSkills();
+
+  if (rpgBattle.playerHp <= 0) {
+    showRpgResult(false);
+  }
+}
+
+function showRpgResult(win) {
+  document.getElementById('rpgBattle').style.display = 'none';
+  document.getElementById('rpgResult').style.display = '';
+  if (win) {
+    const { gem, xp } = rpgBattle.monster;
+    state.gem += gem;
+    addXp(xp);
+    saveState(); render();
+    document.getElementById('resultIcon').textContent = '🏆';
+    document.getElementById('resultTitle').textContent = '勝利！';
+    document.getElementById('resultRewards').innerHTML =
+      `<span class="reward-gem">💎+${gem}</span>  <span class="reward-xp">⚡+${xp}</span>`;
+    toast(`⚔ 勝利！💎+${gem} ⚡+${xp}`);
+  } else {
+    document.getElementById('resultIcon').textContent = '💀';
+    document.getElementById('resultTitle').textContent = '敗北...';
+    document.getElementById('resultRewards').textContent = '再接再厲！';
+  }
+  rpgBattle = null;
+}
+
+function rpgBackToLobby() {
+  rpgBattle = null;
+  renderRpgLobby();
+}
+
+
+// === RPG TABS ===
+function switchRpgTab(tab) {
+  ['battle','char','skills'].forEach(t => {
+    document.getElementById(`rpgSection_${t}`).style.display = t === tab ? '' : 'none';
+    document.getElementById(`rpgTab_${t}`).classList.toggle('active', t === tab);
+  });
+  if (tab === 'char')   renderRpgChar();
+  if (tab === 'skills') renderSkillsTab();
+}
+
+function renderRpgChar() {
+  const stats = getRpgStats();
+  const a = state.allocatedStats || {};
+  const pts = state.statPoints || 0;
+  const totalAllocated = STAT_DEFS.reduce((s, d) => s + (a[d.key]||0), 0);
+  const maxAlloc = state.level - 1;
+
+  const derivedRows = [
+    ['MaxHP', stats.maxHp], ['ATK', stats.atk], ['MATK', stats.matk],
+    ['DEF', stats.def], ['閃避', `${stats.dodge}%`], ['暴擊', `${stats.crit}%`],
+  ];
+
+  const equippedHtml = (EQUIP_SLOTS || []).map(sl => {
+    const item = (state.equipment || {})[sl.key];
+    return `<div class="equip-slot">
+      <span>${sl.emoji} ${sl.label}</span>
+      <span>${item ? `${item.name} <button class="btn-sm" onclick="unequipItem('${sl.key}')">卸下</button>` : '空'}</span>
+    </div>`;
+  }).join('');
+
+  const statBarsHtml = STAT_DEFS.map(d => {
+    const val = a[d.key] || 0;
+    const barPct = maxAlloc > 0 ? (val / Math.max(maxAlloc, 1)) * 100 : 0;
+    return `<div class="stat-row">
+      <div class="stat-header">
+        <span style="color:${d.color};font-weight:700">${d.name}</span>
+        <span style="font-size:11px;color:var(--text-muted)">${d.label} ${d.desc}</span>
+        <span style="font-weight:700">${val}</span>
+      </div>
+      <div class="stat-bar-wrap">
+        <div class="stat-bar-fill" style="width:${barPct}%;background:${d.color}"></div>
+      </div>
+      <div class="stat-btns">
+        <button class="btn-sm" onclick="deallocateStat('${d.key}')" ${val<=0?'disabled':''}>−</button>
+        <button class="btn-sm" onclick="allocateStat('${d.key}')"   ${pts<=0?'disabled':''}>+</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('rpgCharContent').innerHTML = `
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:140px;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:6px;color:var(--text-muted)">基礎數值</div>
+        ${derivedRows.map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border)"><span>${k}</span><span style="font-weight:700">${v}</span></div>`).join('')}
+        <div style="margin-top:10px;font-size:12px;font-weight:700;color:var(--text-muted)">裝備</div>
+        <div style="margin-top:4px">${equippedHtml || '<span style="color:var(--text-muted);font-size:12px">無裝備欄位</span>'}</div>
+      </div>
+      <div style="flex:1.5;min-width:200px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:12px;font-weight:700;color:var(--text-muted)">能力加點</span>
+          <span style="font-size:12px">可用點數：<strong style="color:var(--gem)">${pts}</strong></span>
+        </div>
+        ${statBarsHtml}
+      </div>
+    </div>`;
+}
+
+function allocateStat(key) {
+  if ((state.statPoints || 0) <= 0) { toast('沒有可用點數！'); return; }
+  state.statPoints--;
+  state.allocatedStats[key] = (state.allocatedStats[key] || 0) + 1;
+  saveState();
+  renderRpgChar();
+}
+
+function deallocateStat(key) {
+  if ((state.allocatedStats[key] || 0) <= 0) return;
+  state.allocatedStats[key]--;
+  state.statPoints = (state.statPoints || 0) + 1;
+  saveState();
+  renderRpgChar();
+}
+
+function unequipItem(slot) {
+  const item = (state.equipment || {})[slot];
+  if (!item) return;
+  state.equipment[slot] = null;
+  state.inventory.push({ ...item, count: 1 });
+  saveState();
+  renderRpgChar();
+}
+
+function renderSkillsTab() {
+  document.getElementById('rpgSkillsContent').innerHTML = RPG_SKILLS.map(sk => {
+    const unlocked = state.level >= sk.minLv;
+    return `<div class="skill-entry ${unlocked ? '' : 'locked'}">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:20px">${sk.emoji}</span>
+        <div>
+          <div style="font-weight:700">${sk.name} ${unlocked ? '' : `<span style="color:var(--text-muted);font-size:11px">（Lv.${sk.minLv} 解鎖）</span>`}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${sk.desc}${sk.cooldown ? `，冷卻 ${sk.cooldown} 回` : ''}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // === TOAST ===
@@ -1583,6 +3029,117 @@ function resetAll() {
   state = defaultState();
   saveState(); render();
   toast('已重置！');
+}
+
+// === ACCOUNT BALANCES ===
+function calcAccountBalance(accountId) {
+  const acct = state.accounts.find(a => a.id === accountId);
+  let balance = acct ? (acct.initialBalance || 0) : 0;
+  state.ledger.forEach(e => {
+    if (e.accountId === accountId) {
+      balance += e.type === 'income' ? e.gold : -e.gold;
+    }
+    if (e.fromAccountId === accountId) balance -= e.gold;
+    if (e.toAccountId   === accountId) balance += e.gold;
+  });
+  return balance;
+}
+
+let acctOverviewExpanded = true;
+
+function toggleAcctOverview() {
+  acctOverviewExpanded = !acctOverviewExpanded;
+  renderAccountOverview();
+}
+
+function renderAccountOverview() {
+  const el = document.getElementById('acctOverview');
+  if (!el) return;
+  let totalAssets = 0, totalDebt = 0;
+  state.accounts.forEach(a => {
+    const bal = calcAccountBalance(a.id);
+    if (a.isLiability) totalDebt += bal;
+    else totalAssets += bal;
+  });
+  const net = totalAssets + totalDebt;
+  const netColor = net >= 0 ? 'var(--hp)' : 'var(--danger)';
+  const arrow = acctOverviewExpanded ? '▾' : '▸';
+
+  el.innerHTML = `
+    <div class="acct-overview">
+      <div class="acct-overview-hdr" onclick="toggleAcctOverview()" style="cursor:pointer;">
+        <span class="acct-overview-title">${arrow} 🏦 帳戶概況</span>
+        <span class="acct-net" style="color:${netColor};">
+          淨資產 ${net >= 0 ? '+' : ''}${net}
+        </span>
+      </div>
+      ${acctOverviewExpanded ? `
+        <div class="stats-row" style="margin:8px 0 10px;">
+          <div class="stat-box"><div class="stat-label">總資產</div><div class="stat-value income">${totalAssets}</div></div>
+          <div class="stat-box"><div class="stat-label">負債</div><div class="stat-value expense">${Math.abs(totalDebt)}</div></div>
+          <div class="stat-box"><div class="stat-label">淨資產</div><div class="stat-value net">${net}</div></div>
+        </div>
+        ${state.accounts.map(a => {
+          const bal = calcAccountBalance(a.id);
+          const color = bal >= 0 ? 'var(--hp)' : 'var(--danger)';
+          const debtTag = a.isLiability
+            ? `<span style="font-size:11px;color:var(--danger);border:1px solid var(--danger);padding:1px 3px;border-radius:2px;margin-left:4px;">負債</span>`
+            : '';
+          return `<div class="acct-item">
+            <span class="acct-name">${a.emoji} ${escapeHtml(a.name)}${debtTag}</span>
+            <span class="acct-bal" style="color:${color};">${bal}</span>
+            <button class="acct-edit-btn" onclick="event.stopPropagation();openEditAccount(${a.id})" title="編輯">✏</button>
+          </div>`;
+        }).join('')}
+      ` : ''}
+    </div>
+  `;
+}
+
+let _editAcctIsLiab = false;
+
+function openEditAccount(id) {
+  const acct = state.accounts.find(a => a.id === id);
+  if (!acct) return;
+  document.getElementById('acctEditId').value    = id;
+  document.getElementById('acctEditTitle').textContent = `✏ ${acct.emoji} ${acct.name}`;
+  document.getElementById('acctEditBalance').value    = acct.initialBalance || 0;
+  setAcctType(acct.isLiability || false);
+  document.getElementById('acctEditModalBg').classList.add('show');
+}
+
+function setAcctType(isLiab) {
+  _editAcctIsLiab = isLiab;
+  const asset = document.getElementById('acctTypeAsset');
+  const liab  = document.getElementById('acctTypeLiab');
+  asset.style.cssText += isLiab
+    ? ';background:var(--bg-deep);border-color:var(--border);color:var(--text-muted);'
+    : ';background:var(--hp);border-color:#2e7d32;color:var(--bg-deep);';
+  liab.style.cssText += isLiab
+    ? ';background:var(--danger);border-color:#c62828;color:#fff;'
+    : ';background:var(--bg-deep);border-color:var(--border);color:var(--text-muted);';
+}
+
+function closeAcctEditModal() {
+  document.getElementById('acctEditModalBg').classList.remove('show');
+}
+
+function saveAcctEdit() {
+  const id   = parseInt(document.getElementById('acctEditId').value);
+  const acct = state.accounts.find(a => a.id === id);
+  if (!acct) return;
+  acct.initialBalance = parseFloat(document.getElementById('acctEditBalance').value) || 0;
+  acct.isLiability    = _editAcctIsLiab;
+  saveState(); closeAcctEditModal(); renderAccountOverview();
+}
+
+function deleteAccountFromModal() {
+  const id   = parseInt(document.getElementById('acctEditId').value);
+  const acct = state.accounts.find(a => a.id === id);
+  if (!acct) return;
+  if (!confirm(`刪除帳戶「${acct.emoji}${acct.name}」？\n帳本紀錄不受影響。`)) return;
+  state.accounts = state.accounts.filter(a => a.id !== id);
+  saveState(); closeAcctEditModal(); renderAccountOverview(); renderAccountPicker();
 }
 
 // === GOOGLE DRIVE SYNC ===
@@ -1789,7 +3346,78 @@ document.getElementById('entryModalBg').addEventListener('click', e => {
 document.getElementById('cloudModalBg').addEventListener('click', e => {
   if (e.target.id === 'cloudModalBg') closeCloudModal();
 });
+document.getElementById('acctEditModalBg').addEventListener('click', e => {
+  if (e.target.id === 'acctEditModalBg') closeAcctEditModal();
+});
 </script>
+
+<!-- RPG Page -->
+<div id="rpgPage">
+  <div class="rpg-header">
+    <button class="rpg-back-btn" onclick="closeRpg()">← 返回</button>
+    <div class="rpg-page-title">⚔ 冒險</div>
+    <div class="rpg-tickets">🎫 <span id="rpgTickets">0</span></div>
+  </div>
+
+  <!-- Sub-tabs -->
+  <div style="display:flex;gap:6px;margin-bottom:14px;">
+    <button id="rpgTab_battle" class="filter-btn active" onclick="switchRpgTab('battle')">⚔ 戰鬥</button>
+    <button id="rpgTab_char"   class="filter-btn"        onclick="switchRpgTab('char')">📊 角色</button>
+    <button id="rpgTab_skills" class="filter-btn"        onclick="switchRpgTab('skills')">⚡ 技能</button>
+  </div>
+
+  <!-- Section: Battle -->
+  <div id="rpgSection_battle">
+    <div id="rpgLobby">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">選擇怪物，消耗一張挑戰卷開始戰鬥</div>
+      <div class="monster-grid" id="monsterGrid"></div>
+    </div>
+    <div id="rpgBattle" style="display:none;">
+      <div class="battle-combatant">
+        <div class="battle-combatant-emoji" id="bMonsterEmoji">👾</div>
+        <div class="battle-combatant-info">
+          <div class="battle-combatant-name" id="bMonsterName">怪物</div>
+          <div class="hp-bar-wrap"><div class="hp-bar-fill" id="monsterHpFill" style="width:100%"></div></div>
+          <div class="hp-text" id="monsterHpText">?/?</div>
+        </div>
+      </div>
+      <div class="battle-combatant">
+        <div class="battle-combatant-emoji" id="bPlayerEmoji">🧙</div>
+        <div class="battle-combatant-info">
+          <div class="battle-combatant-name" id="bPlayerName">勇者</div>
+          <div class="hp-bar-wrap"><div class="hp-bar-fill player" id="playerHpFill" style="width:100%"></div></div>
+          <div class="hp-text" id="playerHpText">?/?</div>
+        </div>
+      </div>
+      <div class="battle-mid">
+        <div class="dice-area" id="diceDisplay">🎲</div>
+        <div class="battle-log" id="battleLog"></div>
+      </div>
+      <div class="skill-grid" id="skillGrid"></div>
+    </div>
+    <div id="rpgResult" style="display:none;">
+      <div class="rpg-result">
+        <div class="result-icon" id="resultIcon"></div>
+        <div class="result-title" id="resultTitle"></div>
+        <div class="result-rewards" id="resultRewards"></div>
+        <div class="result-btns">
+          <button class="btn btn-ok" onclick="rpgBackToLobby()">選擇怪物</button>
+          <button class="btn btn-cancel" onclick="closeRpg()">返回主頁</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Character -->
+  <div id="rpgSection_char" style="display:none;">
+    <div id="rpgCharContent"></div>
+  </div>
+
+  <!-- Section: Skills -->
+  <div id="rpgSection_skills" style="display:none;">
+    <div id="rpgSkillsContent"></div>
+  </div>
+</div>
 
 </body>
 </html>
