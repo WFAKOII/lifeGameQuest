@@ -754,6 +754,77 @@
   .ledger-entry:hover .ledger-del { opacity: 1; }
   .ledger-del:hover { color: var(--danger); }
 
+  /* === CATEGORY GRID === */
+  .cat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    max-height: 130px;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .cat-btn {
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    color: var(--text-dim);
+    padding: 5px 2px;
+    font-family: 'VT323', monospace;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 2px;
+    text-align: center;
+    transition: all 0.15s;
+    line-height: 1.2;
+  }
+
+  .cat-btn:hover { border-color: var(--border-bright); color: var(--text); }
+
+  .cat-btn.active {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(255,213,79,0.1);
+  }
+
+  .cat-tag {
+    display: inline-block;
+    font-size: 12px;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    border-radius: 2px;
+    margin-left: 4px;
+    white-space: nowrap;
+  }
+
+  .acct-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .acct-btn {
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    color: var(--text-dim);
+    padding: 4px 10px;
+    font-family: 'VT323', monospace;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+
+  .acct-btn:hover { border-color: var(--border-bright); color: var(--text); }
+
+  .acct-btn.active {
+    border-color: var(--xp);
+    color: var(--xp);
+    background: rgba(79,195,247,0.1);
+  }
+
+  .acct-btn.add-acct { color: var(--text-muted); }
+
   /* === CLOUD SYNC === */
   .cloud-bar {
     background: var(--bg-panel);
@@ -1030,13 +1101,21 @@
       </div>
       <div class="field">
         <label>類型</label>
-        <select id="eType" style="width:100%;background:var(--bg-deep);border:2px solid var(--border);color:var(--text);padding:8px 4px;font-family:'VT323';font-size:18px;border-radius:2px;">
-          <option value="income">+ 收入</option>
+        <select id="eType" onchange="renderCategoryGrid(this.value)" style="width:100%;background:var(--bg-deep);border:2px solid var(--border);color:var(--text);padding:8px 4px;font-family:'VT323';font-size:18px;border-radius:2px;">
           <option value="expense">- 支出</option>
+          <option value="income">+ 收入</option>
         </select>
       </div>
     </div>
-    <div style="font-size:14px;color:var(--text-muted);margin-top:8px;">提示：金幣 / 抽卡填數量（正數），下方選收入或支出</div>
+    <div class="field" style="margin-top:8px;">
+      <label>類別（選填）</label>
+      <div class="cat-grid" id="catGrid"></div>
+    </div>
+    <div class="field">
+      <label>帳戶（選填）</label>
+      <div class="acct-row" id="acctRow"></div>
+    </div>
+    <div style="font-size:14px;color:var(--text-muted);margin-top:4px;">金幣 / 抽卡填數量（正數），選類型後儲存</div>
     <div class="field" style="margin-top:10px;">
       <label>計入金幣餘額</label>
       <button type="button" id="eCountsBtn" onclick="toggleECounts()"
@@ -1105,6 +1184,11 @@ function defaultState() {
       ],
       event: [],
     },
+    accounts: [
+      { id: 1, name: '現金',   emoji: '💵' },
+      { id: 2, name: '銀行',   emoji: '🏦' },
+      { id: 3, name: '信用卡', emoji: '💳' },
+    ],
     ledger: [],
     lastDailyReset: todayStr(),
     lastWeeklyReset: weekStr(),
@@ -1127,7 +1211,7 @@ function saveState() {
 }
 
 // === LEDGER ===
-function addLedger(desc, gold, gem, type, countsAsGold = true) {
+function addLedger(desc, gold, gem, type, countsAsGold = true, category = null, accountId = null) {
   state.ledger.unshift({
     id: Date.now() + Math.random(),
     ts: Date.now(),
@@ -1136,6 +1220,8 @@ function addLedger(desc, gold, gem, type, countsAsGold = true) {
     gem: gem || 0,
     type,
     countsAsGold,
+    category,
+    accountId,
   });
   if (state.ledger.length > 1000) state.ledger.length = 1000;
 }
@@ -1239,12 +1325,17 @@ function renderLedger() {
           if (e.gold) parts.push(`${sign}${e.gold}💰`);
           if (e.gem) parts.push(`${sign}${e.gem}💎`);
           const noCount = e.countsAsGold === false
-            ? `<span style="font-size:11px;color:var(--text-muted);border:1px solid var(--border);padding:1px 4px;border-radius:2px;margin-left:4px;white-space:nowrap;">不計入</span>`
-            : '';
+            ? `<span class="cat-tag">不計入</span>` : '';
+          const catLabel = e.category
+            ? `<span class="cat-tag">${escapeHtml(e.category)}</span>` : '';
+          const acct = e.accountId
+            ? state.accounts.find(a => a.id === e.accountId) : null;
+          const acctLabel = acct
+            ? `<span class="cat-tag">${acct.emoji}${escapeHtml(acct.name)}</span>` : '';
           return `
             <div class="ledger-entry">
               <div class="ledger-time">${time}</div>
-              <div class="ledger-desc">${escapeHtml(e.desc)}${noCount}</div>
+              <div class="ledger-desc">${escapeHtml(e.desc)}${catLabel}${acctLabel}${noCount}</div>
               <div class="ledger-amount ${cls}" style="${e.countsAsGold === false ? 'opacity:0.5' : ''}">${parts.join(' ')}</div>
               <button class="ledger-del" onclick="deleteLedgerEntry(${e.id})" title="刪除">✕</button>
             </div>
@@ -1259,6 +1350,68 @@ function deleteLedgerEntry(id) {
   if (!confirm('刪除這筆紀錄？（不會退回金幣）')) return;
   state.ledger = state.ledger.filter(e => e.id !== id);
   saveState(); renderLedger();
+}
+
+// === CATEGORIES & ACCOUNTS ===
+const CATEGORIES = {
+  expense: [
+    '🍴飲食','🛍日用品','🚆交通','💡水電瓦斯','📱電話網路',
+    '🏠居家','👕服飾','🚗汽車','🎮娛樂','💄美容美髮',
+    '🍺交際應酬','📖學習深造','☂保險','💸稅金','💊醫療保健',
+    '🎓教育','🏦手續費',
+  ],
+  income: [
+    '💵工資','⭐獎金','📈投資','💼副業','🧧家中補給','📦其他',
+  ],
+};
+
+let selectedCategory = null;
+let selectedAccount  = null;
+
+function renderCategoryGrid(type) {
+  selectedCategory = null;
+  const cats = CATEGORIES[type] || CATEGORIES.expense;
+  document.getElementById('catGrid').innerHTML = cats.map(c => `
+    <button type="button" class="cat-btn" data-cat="${escapeHtml(c)}" onclick="selectCat(this)">
+      ${escapeHtml(c)}
+    </button>
+  `).join('');
+}
+
+function selectCat(btn) {
+  const val = btn.dataset.cat;
+  selectedCategory = selectedCategory === val ? null : val;
+  document.querySelectorAll('.cat-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.cat === selectedCategory)
+  );
+}
+
+function renderAccountPicker() {
+  selectedAccount = null;
+  document.getElementById('acctRow').innerHTML =
+    state.accounts.map(a => `
+      <button type="button" class="acct-btn" data-aid="${a.id}" onclick="selectAcct(this)">
+        ${a.emoji} ${escapeHtml(a.name)}
+      </button>
+    `).join('') +
+    `<button type="button" class="acct-btn add-acct" onclick="addAccount()">＋ 新增</button>`;
+}
+
+function selectAcct(btn) {
+  const id = parseInt(btn.dataset.aid);
+  selectedAccount = selectedAccount === id ? null : id;
+  document.querySelectorAll('.acct-btn:not(.add-acct)').forEach(b =>
+    b.classList.toggle('active', parseInt(b.dataset.aid) === selectedAccount)
+  );
+}
+
+function addAccount() {
+  const name = prompt('帳戶名稱（例：郵局）');
+  if (!name || !name.trim()) return;
+  const emoji = prompt('圖示 emoji（例：🏛）', '🏛') || '🏛';
+  state.accounts.push({ id: Date.now(), name: name.trim(), emoji: emoji.trim() });
+  saveState();
+  renderAccountPicker();
 }
 
 let eCounts = true;
@@ -1285,8 +1438,10 @@ function openAddEntry() {
   document.getElementById('eDesc').value = '';
   document.getElementById('eGold').value = '0';
   document.getElementById('eGem').value = '0';
-  document.getElementById('eType').value = 'income';
+  document.getElementById('eType').value = 'expense';
   setECounts(true);
+  renderCategoryGrid('expense');
+  renderAccountPicker();
   document.getElementById('entryModalBg').classList.add('show');
   setTimeout(() => document.getElementById('eDesc').focus(), 100);
 }
@@ -1314,7 +1469,7 @@ function saveEntry() {
       state.gem -= gem;
     }
   }
-  addLedger(desc, gold, gem, type, eCounts);
+  addLedger(desc, gold, gem, type, eCounts, selectedCategory, selectedAccount);
   saveState(); render(); closeEntryModal();
   toast(type === 'income' ? '已記錄收入' : '已記錄支出');
 }
