@@ -1037,6 +1037,13 @@
       </div>
     </div>
     <div style="font-size:14px;color:var(--text-muted);margin-top:8px;">提示：金幣 / 抽卡填數量（正數），下方選收入或支出</div>
+    <div class="field" style="margin-top:10px;">
+      <label>計入金幣餘額</label>
+      <button type="button" id="eCountsBtn" onclick="toggleECounts()"
+        style="width:100%;padding:8px 0;font-family:'VT323',monospace;font-size:18px;border-radius:2px;cursor:pointer;border:2px solid #2e7d32;background:var(--hp);color:var(--bg-deep);transition:all 0.15s;">
+        ✓ 計入
+      </button>
+    </div>
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeEntryModal()">取消</button>
       <button class="btn btn-ok" onclick="saveEntry()">確認</button>
@@ -1120,8 +1127,7 @@ function saveState() {
 }
 
 // === LEDGER ===
-function addLedger(desc, gold, gem, type) {
-  // gold/gem are positive amounts; type is 'income' or 'expense'
+function addLedger(desc, gold, gem, type, countsAsGold = true) {
   state.ledger.unshift({
     id: Date.now() + Math.random(),
     ts: Date.now(),
@@ -1129,8 +1135,8 @@ function addLedger(desc, gold, gem, type) {
     gold: gold || 0,
     gem: gem || 0,
     type,
+    countsAsGold,
   });
-  // Cap to last 1000 entries to keep storage manageable
   if (state.ledger.length > 1000) state.ledger.length = 1000;
 }
 
@@ -1162,9 +1168,9 @@ function renderLedger() {
   const since = periodStart(ledgerPeriod);
   const filtered = state.ledger.filter(e => e.ts >= since);
 
-  // Stats
+  // Stats — only count entries that affect the gold balance
   let incomeG = 0, incomeM = 0, expG = 0, expM = 0;
-  filtered.forEach(e => {
+  filtered.filter(e => e.countsAsGold !== false).forEach(e => {
     if (e.type === 'income') { incomeG += e.gold; incomeM += e.gem; }
     else { expG += e.gold; expM += e.gem; }
   });
@@ -1209,9 +1215,9 @@ function renderLedger() {
       label += ` (${days[date.getDay()]})`;
     }
 
-    // Day total
+    // Day total (only entries that count toward gold balance)
     let dayG = 0, dayM = 0;
-    entries.forEach(e => {
+    entries.filter(e => e.countsAsGold !== false).forEach(e => {
       const sign = e.type === 'income' ? 1 : -1;
       dayG += sign * e.gold;
       dayM += sign * e.gem;
@@ -1232,11 +1238,14 @@ function renderLedger() {
           const parts = [];
           if (e.gold) parts.push(`${sign}${e.gold}💰`);
           if (e.gem) parts.push(`${sign}${e.gem}💎`);
+          const noCount = e.countsAsGold === false
+            ? `<span style="font-size:11px;color:var(--text-muted);border:1px solid var(--border);padding:1px 4px;border-radius:2px;margin-left:4px;white-space:nowrap;">不計入</span>`
+            : '';
           return `
             <div class="ledger-entry">
               <div class="ledger-time">${time}</div>
-              <div class="ledger-desc">${escapeHtml(e.desc)}</div>
-              <div class="ledger-amount ${cls}">${parts.join(' ')}</div>
+              <div class="ledger-desc">${escapeHtml(e.desc)}${noCount}</div>
+              <div class="ledger-amount ${cls}" style="${e.countsAsGold === false ? 'opacity:0.5' : ''}">${parts.join(' ')}</div>
               <button class="ledger-del" onclick="deleteLedgerEntry(${e.id})" title="刪除">✕</button>
             </div>
           `;
@@ -1252,11 +1261,32 @@ function deleteLedgerEntry(id) {
   saveState(); renderLedger();
 }
 
+let eCounts = true;
+
+function setECounts(val) {
+  eCounts = val;
+  const btn = document.getElementById('eCountsBtn');
+  if (eCounts) {
+    btn.textContent = '✓ 計入';
+    btn.style.background = 'var(--hp)';
+    btn.style.borderColor = '#2e7d32';
+    btn.style.color = 'var(--bg-deep)';
+  } else {
+    btn.textContent = '✗ 不計入（僅記錄）';
+    btn.style.background = 'var(--bg-deep)';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.color = 'var(--text-muted)';
+  }
+}
+
+function toggleECounts() { setECounts(!eCounts); }
+
 function openAddEntry() {
   document.getElementById('eDesc').value = '';
   document.getElementById('eGold').value = '0';
   document.getElementById('eGem').value = '0';
   document.getElementById('eType').value = 'income';
+  setECounts(true);
   document.getElementById('entryModalBg').classList.add('show');
   setTimeout(() => document.getElementById('eDesc').focus(), 100);
 }
@@ -1273,16 +1303,18 @@ function saveEntry() {
   const type = document.getElementById('eType').value;
   if (!gold && !gem) { alert('金幣或抽卡至少要填一個'); return; }
 
-  if (type === 'income') {
-    state.gold += gold;
-    state.gem += gem;
-  } else {
-    if (state.gold < gold) { alert('金幣不夠扣！'); return; }
-    if (state.gem < gem) { alert('抽卡資源不夠扣！'); return; }
-    state.gold -= gold;
-    state.gem -= gem;
+  if (eCounts) {
+    if (type === 'income') {
+      state.gold += gold;
+      state.gem += gem;
+    } else {
+      if (state.gold < gold) { alert('金幣不夠扣！'); return; }
+      if (state.gem < gem) { alert('抽卡資源不夠扣！'); return; }
+      state.gold -= gold;
+      state.gem -= gem;
+    }
   }
-  addLedger(desc, gold, gem, type);
+  addLedger(desc, gold, gem, type, eCounts);
   saveState(); render(); closeEntryModal();
   toast(type === 'income' ? '已記錄收入' : '已記錄支出');
 }
