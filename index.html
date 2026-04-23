@@ -1139,14 +1139,14 @@
 
     <!-- Spend -->
     <div style="margin-top:16px;padding-top:16px;border-top:2px dashed var(--border);">
-      <div class="panel-title" style="margin-bottom:10px;">💸 純消費</div>
-      <div class="shop-info">花費娛樂點或記錄其他消費</div>
+      <div class="panel-title" style="margin-bottom:6px;">💸 使用娛樂點</div>
+      <div class="shop-info">可用娛樂點：<strong id="entPointsAvail" style="color:var(--gem)">0</strong> 元</div>
       <div class="spend-form">
         <div class="field" style="margin:0;">
           <label>消費金額</label>
           <input type="number" id="spendAmount" placeholder="100" min="1">
         </div>
-        <button class="btn btn-ok" onclick="spendGold()" style="height:40px;">扣除</button>
+        <button class="btn btn-ok" onclick="spendPoints()" style="height:40px;">使用</button>
       </div>
     </div>
   </div>
@@ -1435,12 +1435,12 @@ function defaultState() {
     todos: [],
     inventory: [],
     gachaPrizes: [
-      { id: 1, name: '飲料卷',     emoji: '🥤', rarity: 'N',   weight: 35 },
-      { id: 2, name: '50元娛樂點',  emoji: '🎮', rarity: 'N',   weight: 30 },
-      { id: 3, name: '100元娛樂點', emoji: '🎯', rarity: 'R',   weight: 20 },
-      { id: 4, name: '150元娛樂點', emoji: '🎁', rarity: 'SR',  weight: 12 },
-      { id: 5, name: '200元娛樂點', emoji: '💸', rarity: 'SR',  weight:  2 },
-      { id: 6, name: '神秘大獎',    emoji: '👑', rarity: 'SSR', weight:  1 },
+      { id: 1, name: '銘謝惠顧',    emoji: '🙏', rarity: 'N',   weight: 50, noItem: true },
+      { id: 2, name: '50元娛樂點',  emoji: '🎮', rarity: 'N',   weight: 25 },
+      { id: 3, name: '100元娛樂點', emoji: '🎯', rarity: 'R',   weight: 14 },
+      { id: 4, name: '150元娛樂點', emoji: '🎁', rarity: 'SR',  weight:  7 },
+      { id: 5, name: '200元娛樂點', emoji: '💸', rarity: 'SR',  weight:  3 },
+      { id: 6, name: '飲料卷',      emoji: '🥤', rarity: 'SSR', weight:  1 },
     ],
     lastDailyReset: todayStr(),
     lastWeeklyReset: weekStr(),
@@ -1985,8 +1985,8 @@ function openAddTodo() {
   const titleInput = document.getElementById('todoInput');
   document.getElementById('tdName').value = titleInput ? titleInput.value.trim() : '';
   document.getElementById('tdDate').value = dateInput ? (dateInput.value || '') : '';
-  document.getElementById('tdGem').value = '0';
-  document.getElementById('tdXp').value = '0';
+  document.getElementById('tdGem').value = '1';
+  document.getElementById('tdXp').value = '10';
   document.getElementById('todoModalBg').classList.add('show');
   setTimeout(() => document.getElementById('tdName').focus(), 100);
 }
@@ -2219,10 +2219,12 @@ function doGacha() {
   setTimeout(() => {
     machine.classList.remove('spinning');
     const prize = pickPrize();
-    if (!state.inventory) state.inventory = [];
-    const existing = state.inventory.find(i => i.name === prize.name);
-    if (existing) { existing.count++; } else {
-      state.inventory.push({ id: Date.now(), name: prize.name, emoji: prize.emoji || '🎁', rarity: prize.rarity || 'N', count: 1 });
+    if (!prize.noItem) {
+      if (!state.inventory) state.inventory = [];
+      const existing = state.inventory.find(i => i.name === prize.name);
+      if (existing) { existing.count++; } else {
+        state.inventory.push({ id: Date.now(), name: prize.name, emoji: prize.emoji || '🎁', rarity: prize.rarity || 'N', count: 1 });
+      }
     }
     saveState();
     const col = RARITY_COLOR[prize.rarity] || RARITY_COLOR.N;
@@ -2243,6 +2245,8 @@ function toggleInventory() {
 }
 
 function renderInventory() {
+  const avEl = document.getElementById('entPointsAvail');
+  if (avEl) avEl.textContent = getInventoryEntPoints();
   const el = document.getElementById('inventoryList');
   if (!el) return;
   const items = state.inventory || [];
@@ -2349,17 +2353,37 @@ function savePrizes() {
 }
 
 // === SPEND ===
-function spendGold() {
+function getInventoryEntPoints() {
+  return (state.inventory || []).reduce((sum, item) => {
+    const m = item.name.match(/^(\d+)元娛樂點$/);
+    return sum + (m ? parseInt(m[1]) * item.count : 0);
+  }, 0);
+}
+
+function consumeEntPoints(amount) {
+  const items = (state.inventory || [])
+    .filter(i => /^(\d+)元娛樂點$/.test(i.name))
+    .map(i => ({ item: i, val: parseInt(i.name.match(/^(\d+)/)[1]) }))
+    .sort((a, b) => a.val - b.val); // smallest first to minimize over-spend
+  let rem = amount;
+  for (const { item, val } of items) {
+    while (rem > 0 && item.count > 0) { item.count--; rem -= val; }
+  }
+  state.inventory = state.inventory.filter(i => i.count > 0);
+}
+
+function spendPoints() {
   const amt = parseInt(document.getElementById('spendAmount').value) || 0;
   if (amt < 1) { alert('請輸入金額'); return; }
-  if (state.gold < amt) { toast('💰 金幣不夠！'); return; }
-  const desc = prompt(`花了 ${amt} 💰 在哪？（可不填）`, '消費');
-  if (desc === null) return; // cancelled
-  state.gold -= amt;
-  addLedger(`[消費] ${desc.trim() || '消費'}`, amt, 0, 'expense');
+  const avail = getInventoryEntPoints();
+  if (avail < amt) { toast(`💸 娛樂點不足！目前有 ${avail} 元`); return; }
+  const desc = prompt(`花了 ${amt} 元娛樂點在哪？（可不填）`, '娛樂消費');
+  if (desc === null) return;
+  consumeEntPoints(amt);
   document.getElementById('spendAmount').value = '';
-  saveState(); render();
-  toast(`-${amt}💰 已扣除`);
+  saveState();
+  renderInventory();
+  toast(`🎉 使用 ${amt} 元娛樂點：${desc.trim() || '娛樂消費'}`);
 }
 
 // === TOAST ===
