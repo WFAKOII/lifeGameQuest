@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIFE QUEST</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #0a0e27;
+    --bg-panel: #1a1f3a;
+    --bg-panel-light: #252b4d;
+    --border: #4a5490;
+    --border-bright: #7986cb;
+    --gold: #ffd54f;
+    --gold-dark: #ff8f00;
+    --gem: #e91e63;
+    --gem-dark: #ad1457;
+    --xp: #4fc3f7;
+    --hp: #66bb6a;
+    --text: #e8eaf6;
+    --text-dim: #9fa8da;
+    --text-muted: #5c6bc0;
+    --danger: #ef5350;
+    --shadow: 0 4px 0 rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; image-rendering: pixelated; }
+
+  html, body {
+    background: var(--bg-deep);
+    color: var(--text);
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(121,134,203,0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(233,30,99,0.06) 0%, transparent 50%),
+      repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 16px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* === HEADER / CHARACTER === */
+  .character-panel {
+    background: var(--bg-panel);
+    border: 3px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow), inset 0 0 0 1px rgba(255,255,255,0.05);
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .avatar {
+    width: 80px; height: 80px;
+    background: var(--bg-panel-light);
+    border: 3px solid var(--border-bright);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .avatar::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.1), transparent 30%, transparent 70%, rgba(0,0,0,0.2));
+  }
+
+  .char-info { display: flex; flex-direction: column; gap: 6px; }
+
+  .char-name {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    color: var(--gold);
+    text-shadow: 2px 2px 0 rgba(0,0,0,0.5);
+    cursor: pointer;
+  }
+
+  .char-name:hover { color: #fff; }
+
+  .level-badge {
+    display: inline-block;
+    background: var(--xp);
+    color: var(--bg-deep);
+    padding: 2px 8px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    border-radius: 2px;
+    margin-right: 6px;
+  }
+
+  .xp-bar {
+    height: 12px;
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--xp), #29b6f6);
+    transition: width 0.5s cubic-bezier(.4,2,.6,1);
+    position: relative;
+  }
+
+  .xp-fill::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.4), transparent 50%);
+  }
+
+  .xp-text {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  /* === RESOURCES === */
+  .resources {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .resource {
+    background: var(--bg-panel);
+    border: 3px solid var(--border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .resource.gold { border-color: var(--gold-dark); }
+  .resource.gem { border-color: var(--gem-dark); }
+
+  .resource-icon {
+    font-size: 28px;
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,0.5));
+  }
+
+  .resource-info { flex: 1; }
+
+  .resource-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+    letter-spacing: 1px;
+  }
+
+  .resource-value {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 16px;
+  }
+
+  .resource.gold .resource-value { color: var(--gold); }
+  .resource.gem .resource-value { color: var(--gem); }
+
+  /* === TABS === */
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  .tab {
+    background: var(--bg-panel);
+    border: 3px solid var(--border);
+    border-bottom: none;
+    color: var(--text-dim);
+    padding: 10px 4px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    cursor: pointer;
+    text-align: center;
+    border-radius: 4px 4px 0 0;
+    transition: all 0.15s;
+  }
+
+  .tab:hover { color: var(--text); background: var(--bg-panel-light); }
+
+  .tab.active {
+    background: var(--bg-panel-light);
+    color: var(--gold);
+    border-color: var(--gold-dark);
+    box-shadow: inset 0 -3px 0 var(--gold-dark);
+  }
+
+  .panel {
+    background: var(--bg-panel);
+    border: 3px solid var(--border);
+    border-radius: 0 0 4px 4px;
+    padding: 14px;
+    min-height: 300px;
+    box-shadow: var(--shadow);
+  }
+
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 2px dashed var(--border);
+  }
+
+  .panel-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    color: var(--text);
+  }
+
+  .reset-info {
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  .add-btn {
+    background: var(--bg-deep);
+    border: 2px solid var(--border-bright);
+    color: var(--text);
+    padding: 6px 12px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+
+  .add-btn:hover {
+    background: var(--border-bright);
+    color: var(--bg-deep);
+  }
+
+  /* === QUEST LIST === */
+  .quest-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .quest {
+    background: var(--bg-panel-light);
+    border: 2px solid var(--border);
+    border-radius: 3px;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+  }
+
+  .quest:hover {
+    border-color: var(--border-bright);
+    transform: translateX(2px);
+  }
+
+  .quest.done {
+    opacity: 0.5;
+    background: var(--bg-deep);
+  }
+
+  .quest.done .quest-name { text-decoration: line-through; }
+
+  .quest-check {
+    width: 24px; height: 24px;
+    border: 2px solid var(--border-bright);
+    border-radius: 2px;
+    background: var(--bg-deep);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: var(--hp);
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .quest-check:hover { border-color: var(--gold); }
+  .quest.done .quest-check { background: var(--hp); color: var(--bg-deep); }
+
+  .quest-body { flex: 1; min-width: 0; }
+
+  .quest-name {
+    font-size: 18px;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  .quest-rewards {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  .reward-gold { color: var(--gold); }
+  .reward-gem { color: var(--gem); }
+  .reward-xp { color: var(--xp); }
+
+  .quest-del {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 18px;
+    padding: 4px 8px;
+    transition: color 0.15s;
+  }
+
+  .quest-del:hover { color: var(--danger); }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+  }
+
+  .empty-state-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+
+  /* === GACHA === */
+  .gacha-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 0;
+  }
+
+  .gacha-machine {
+    width: 200px; height: 200px;
+    background: linear-gradient(180deg, var(--bg-panel-light), var(--bg-deep));
+    border: 4px solid var(--gold-dark);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 96px;
+    position: relative;
+    box-shadow: 0 0 30px rgba(255,213,79,0.2), var(--shadow);
+  }
+
+  .gacha-machine.spinning { animation: shake 0.5s infinite; }
+
+  @keyframes shake {
+    0%, 100% { transform: translate(0,0); }
+    25% { transform: translate(-3px, 2px); }
+    50% { transform: translate(3px, -2px); }
+    75% { transform: translate(-2px, -2px); }
+  }
+
+  .gacha-cost {
+    font-size: 18px;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  .gacha-btn {
+    background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+    border: 3px solid var(--gold-dark);
+    color: var(--bg-deep);
+    padding: 12px 32px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    box-shadow: 0 4px 0 #b85b00;
+    transition: all 0.1s;
+  }
+
+  .gacha-btn:hover:not(:disabled) {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #b85b00;
+  }
+
+  .gacha-btn:disabled {
+    background: var(--bg-panel-light);
+    border-color: var(--border);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    box-shadow: var(--shadow);
+  }
+
+  .gacha-result {
+    background: var(--bg-deep);
+    border: 2px dashed var(--border);
+    padding: 16px;
+    text-align: center;
+    border-radius: 4px;
+    min-width: 280px;
+    font-size: 18px;
+    color: var(--text-dim);
+  }
+
+  .gacha-result.win {
+    border-color: var(--gold);
+    color: var(--gold);
+    animation: pop 0.4s;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(0.8); opacity: 0; }
+    60% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  /* === MODAL === */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+  }
+
+  .modal-bg.show { display: flex; }
+
+  .modal {
+    background: var(--bg-panel);
+    border: 4px solid var(--border-bright);
+    border-radius: 4px;
+    padding: 20px;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 0 40px rgba(121,134,203,0.3);
+  }
+
+  .modal-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px dashed var(--border);
+  }
+
+  .field { margin-bottom: 12px; }
+
+  .field label {
+    display: block;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    color: var(--text);
+    padding: 8px 10px;
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    border-radius: 2px;
+  }
+
+  .field input:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+
+  .btn {
+    padding: 8px 16px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    border: 2px solid;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+
+  .btn-cancel {
+    background: var(--bg-deep);
+    border-color: var(--border);
+    color: var(--text-dim);
+  }
+
+  .btn-cancel:hover { color: var(--text); }
+
+  .btn-ok {
+    background: var(--hp);
+    border-color: #2e7d32;
+    color: var(--bg-deep);
+  }
+
+  .btn-ok:hover { background: #81c784; }
+
+  /* === TOAST === */
+  .toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: var(--bg-panel);
+    border: 3px solid var(--gold);
+    color: var(--gold);
+    padding: 10px 20px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    border-radius: 4px;
+    z-index: 200;
+    transition: transform 0.3s cubic-bezier(.4,2,.6,1);
+    box-shadow: 0 0 20px rgba(255,213,79,0.4);
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* === LEVEL UP === */
+  .level-up {
+    position: fixed; inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+    background: rgba(0,0,0,0.7);
+  }
+
+  .level-up.show { display: flex; }
+
+  .level-up-text {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 32px;
+    color: var(--gold);
+    text-shadow: 4px 4px 0 var(--gold-dark), 0 0 30px var(--gold);
+    animation: levelup 1.5s;
+  }
+
+  @keyframes levelup {
+    0% { transform: scale(0); opacity: 0; }
+    20% { transform: scale(1.3); opacity: 1; }
+    80% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+
+  /* === SETTINGS LINK === */
+  .footer {
+    text-align: center;
+    padding: 16px 0;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  .footer a {
+    color: var(--text-muted);
+    cursor: pointer;
+    text-decoration: underline;
+    margin: 0 6px;
+  }
+  .footer a:hover { color: var(--text-dim); }
+
+  /* === SHOP === */
+  .shop-info {
+    background: var(--bg-deep);
+    border: 2px dashed var(--border);
+    padding: 12px;
+    margin-bottom: 12px;
+    border-radius: 3px;
+    font-size: 16px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .shop-info strong { color: var(--gold); }
+
+  .spend-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: end;
+  }
+
+  /* === LEDGER === */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .stat-box {
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    border-radius: 3px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+
+  .stat-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    letter-spacing: 1px;
+  }
+
+  .stat-value {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    color: var(--text);
+  }
+
+  .stat-value.income { color: var(--hp); }
+  .stat-value.expense { color: var(--danger); }
+  .stat-value.net { color: var(--gold); }
+
+  .filter-row {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    color: var(--text-dim);
+    padding: 4px 10px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+  }
+
+  .filter-btn.active {
+    background: var(--border-bright);
+    color: var(--bg-deep);
+    border-color: var(--border-bright);
+  }
+
+  .ledger-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .ledger-list::-webkit-scrollbar { width: 8px; }
+  .ledger-list::-webkit-scrollbar-track { background: var(--bg-deep); }
+  .ledger-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .ledger-day {
+    margin-bottom: 12px;
+  }
+
+  .ledger-day-header {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+    padding: 4px 0;
+    border-bottom: 1px dashed var(--border);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .ledger-entry {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 6px;
+    border-bottom: 1px solid rgba(74,84,144,0.3);
+    font-size: 16px;
+  }
+
+  .ledger-entry:hover {
+    background: rgba(255,255,255,0.02);
+  }
+
+  .ledger-time {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    color: var(--text-muted);
+    min-width: 38px;
+  }
+
+  .ledger-desc {
+    flex: 1;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  .ledger-amount {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    white-space: nowrap;
+    text-align: right;
+    min-width: 80px;
+  }
+
+  .ledger-amount.income { color: var(--hp); }
+  .ledger-amount.expense { color: var(--danger); }
+
+  .ledger-del {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 6px;
+    opacity: 0.4;
+    transition: opacity 0.15s;
+  }
+
+  .ledger-entry:hover .ledger-del { opacity: 1; }
+  .ledger-del:hover { color: var(--danger); }
+
+  @media (max-width: 480px) {
+    body { font-size: 18px; }
+    .container { padding: 10px; }
+    .tab { font-size: 7px; padding: 8px 2px; }
+    .panel-title { font-size: 10px; }
+    .resource-value { font-size: 14px; }
+    .gacha-machine { width: 160px; height: 160px; font-size: 72px; }
+    .level-up-text { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Character -->
+  <div class="character-panel">
+    <div class="avatar" id="avatar">🧙</div>
+    <div class="char-info">
+      <div class="char-name" id="charName" title="點擊修改">勇者</div>
+      <div>
+        <span class="level-badge" id="levelBadge">LV.1</span>
+        <span class="xp-text" id="xpText">0 / 100 XP</span>
+      </div>
+      <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <!-- Resources -->
+  <div class="resources">
+    <div class="resource gold">
+      <div class="resource-icon">💰</div>
+      <div class="resource-info">
+        <div class="resource-label">GOLD</div>
+        <div class="resource-value" id="goldValue">0</div>
+      </div>
+    </div>
+    <div class="resource gem">
+      <div class="resource-icon">💎</div>
+      <div class="resource-info">
+        <div class="resource-label">GACHA</div>
+        <div class="resource-value" id="gemValue">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" data-tab="daily">每日</div>
+    <div class="tab" data-tab="weekly">每週</div>
+    <div class="tab" data-tab="event">活動</div>
+    <div class="tab" data-tab="gacha">抽卡</div>
+    <div class="tab" data-tab="ledger">帳本</div>
+  </div>
+
+  <!-- Daily -->
+  <div class="panel" id="panel-daily">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">⚔ 每日任務</div>
+        <div class="reset-info" id="dailyReset"></div>
+      </div>
+      <button class="add-btn" onclick="openAddQuest('daily')">+ 新增</button>
+    </div>
+    <div class="quest-list" id="dailyList"></div>
+  </div>
+
+  <!-- Weekly -->
+  <div class="panel" id="panel-weekly" style="display:none">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">🛡 每週任務</div>
+        <div class="reset-info" id="weeklyReset"></div>
+      </div>
+      <button class="add-btn" onclick="openAddQuest('weekly')">+ 新增</button>
+    </div>
+    <div class="quest-list" id="weeklyList"></div>
+  </div>
+
+  <!-- Event -->
+  <div class="panel" id="panel-event" style="display:none">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">⭐ 活動</div>
+        <div class="reset-info">一次性任務，完成後消失</div>
+      </div>
+      <button class="add-btn" onclick="openAddQuest('event')">+ 新增</button>
+    </div>
+    <div class="quest-list" id="eventList"></div>
+  </div>
+
+  <!-- Gacha -->
+  <div class="panel" id="panel-gacha" style="display:none">
+    <div class="panel-header">
+      <div class="panel-title">🎰 抽卡 / 消費</div>
+    </div>
+
+    <div class="shop-info">
+      <strong>抽卡規則：</strong><br>
+      • 每次抽卡消耗 1 💎 + 自訂金幣數<br>
+      • 💎 是「娛樂預算」，💰 是「總財富」<br>
+      • 兩個都會扣，提醒你娛樂的代價
+    </div>
+
+    <div class="gacha-area">
+      <div class="gacha-machine" id="gachaMachine">🎁</div>
+      <div class="gacha-cost">
+        本次抽卡花費：
+        <input type="number" id="gachaCost" value="50" min="1" style="width:80px; background:var(--bg-deep); border:2px solid var(--border); color:var(--gold); padding:4px; font-family:'VT323'; font-size:18px; text-align:center; border-radius:2px;"> 💰 + 1 💎
+      </div>
+      <button class="gacha-btn" id="gachaBtn" onclick="doGacha()">🎲 抽 卡 !</button>
+      <div class="gacha-result" id="gachaResult">準備好就按下抽卡按鈕！</div>
+    </div>
+
+    <div style="margin-top: 24px; padding-top: 16px; border-top: 2px dashed var(--border);">
+      <div class="panel-title" style="margin-bottom: 10px;">💸 純消費（不抽卡）</div>
+      <div class="shop-info">把金幣兌現拿去花，例如真的買咖啡時記錄下來</div>
+      <div class="spend-form">
+        <div class="field" style="margin:0;">
+          <label>消費金額</label>
+          <input type="number" id="spendAmount" placeholder="100" min="1">
+        </div>
+        <button class="btn btn-ok" onclick="spendGold()" style="height: 40px;">扣除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ledger -->
+  <div class="panel" id="panel-ledger" style="display:none">
+    <div class="panel-header">
+      <div>
+        <div class="panel-title">📒 帳本</div>
+        <div class="reset-info">所有金幣 / 抽卡資源進出紀錄</div>
+      </div>
+      <button class="add-btn" onclick="openAddEntry()">+ 手動</button>
+    </div>
+
+    <div class="filter-row">
+      <button class="filter-btn active" data-period="today" onclick="setLedgerPeriod('today')">今日</button>
+      <button class="filter-btn" data-period="week" onclick="setLedgerPeriod('week')">本週</button>
+      <button class="filter-btn" data-period="month" onclick="setLedgerPeriod('month')">本月</button>
+      <button class="filter-btn" data-period="all" onclick="setLedgerPeriod('all')">全部</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-label">收入</div>
+        <div class="stat-value income" id="statIncome">+0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">支出</div>
+        <div class="stat-value expense" id="statExpense">-0</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">淨額</div>
+        <div class="stat-value net" id="statNet">0</div>
+      </div>
+    </div>
+
+    <div class="ledger-list" id="ledgerList"></div>
+  </div>
+
+  <div class="footer">
+    <a onclick="exportData()">匯出資料</a>·
+    <a onclick="importData()">匯入資料</a>·
+    <a onclick="resetAll()">重置全部</a>
+  </div>
+</div>
+
+<!-- Add Quest Modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">新增任務</div>
+    <div class="field">
+      <label>任務名稱</label>
+      <input type="text" id="qName" placeholder="例：運動 30 分鐘">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>💰 金幣</label>
+        <input type="number" id="qGold" value="10" min="0">
+      </div>
+      <div class="field">
+        <label>💎 抽卡</label>
+        <input type="number" id="qGem" value="0" min="0">
+      </div>
+      <div class="field">
+        <label>⚡ XP</label>
+        <input type="number" id="qXp" value="20" min="0">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeModal()">取消</button>
+      <button class="btn btn-ok" onclick="saveQuest()">確認</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Ledger Entry Modal -->
+<div class="modal-bg" id="entryModalBg">
+  <div class="modal">
+    <div class="modal-title">手動新增紀錄</div>
+    <div class="field">
+      <label>說明</label>
+      <input type="text" id="eDesc" placeholder="例：發票中獎、買咖啡">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>💰 金幣</label>
+        <input type="number" id="eGold" value="0">
+      </div>
+      <div class="field">
+        <label>💎 抽卡</label>
+        <input type="number" id="eGem" value="0">
+      </div>
+      <div class="field">
+        <label>類型</label>
+        <select id="eType" style="width:100%;background:var(--bg-deep);border:2px solid var(--border);color:var(--text);padding:8px 4px;font-family:'VT323';font-size:18px;border-radius:2px;">
+          <option value="income">+ 收入</option>
+          <option value="expense">- 支出</option>
+        </select>
+      </div>
+    </div>
+    <div style="font-size:14px;color:var(--text-muted);margin-top:8px;">提示：金幣 / 抽卡填數量（正數），下方選收入或支出</div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeEntryModal()">取消</button>
+      <button class="btn btn-ok" onclick="saveEntry()">確認</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Level Up -->
+<div class="level-up" id="levelUp"><div class="level-up-text">LEVEL UP!</div></div>
+
+<script>
+// === STATE ===
+const STORAGE_KEY = 'lifequest_v1';
+let state = loadState();
+
+function defaultState() {
+  return {
+    name: '勇者',
+    avatar: '🧙',
+    level: 1,
+    xp: 0,
+    gold: 0,
+    gem: 0,
+    quests: {
+      daily: [
+        { id: 1, name: '喝 2000ml 水', gold: 5, gem: 1, xp: 10, done: false },
+        { id: 2, name: '運動 30 分鐘', gold: 20, gem: 2, xp: 30, done: false },
+      ],
+      weekly: [
+        { id: 3, name: '整理房間', gold: 50, gem: 5, xp: 80, done: false },
+      ],
+      event: [],
+    },
+    ledger: [],
+    lastDailyReset: todayStr(),
+    lastWeeklyReset: weekStr(),
+  };
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultState();
+    const s = JSON.parse(raw);
+    return Object.assign(defaultState(), s);
+  } catch (e) { return defaultState(); }
+}
+
+function saveState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// === LEDGER ===
+function addLedger(desc, gold, gem, type) {
+  // gold/gem are positive amounts; type is 'income' or 'expense'
+  state.ledger.unshift({
+    id: Date.now() + Math.random(),
+    ts: Date.now(),
+    desc,
+    gold: gold || 0,
+    gem: gem || 0,
+    type,
+  });
+  // Cap to last 1000 entries to keep storage manageable
+  if (state.ledger.length > 1000) state.ledger.length = 1000;
+}
+
+let ledgerPeriod = 'today';
+
+function setLedgerPeriod(p) {
+  ledgerPeriod = p;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.period === p);
+  });
+  renderLedger();
+}
+
+function periodStart(p) {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  if (p === 'today') return d.getTime();
+  if (p === 'week') {
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    d.setDate(diff);
+    return d.getTime();
+  }
+  if (p === 'month') { d.setDate(1); return d.getTime(); }
+  return 0;
+}
+
+function renderLedger() {
+  const since = periodStart(ledgerPeriod);
+  const filtered = state.ledger.filter(e => e.ts >= since);
+
+  // Stats
+  let incomeG = 0, incomeM = 0, expG = 0, expM = 0;
+  filtered.forEach(e => {
+    if (e.type === 'income') { incomeG += e.gold; incomeM += e.gem; }
+    else { expG += e.gold; expM += e.gem; }
+  });
+
+  document.getElementById('statIncome').innerHTML =
+    `+${incomeG}💰` + (incomeM ? ` <span style="font-size:14px;">+${incomeM}💎</span>` : '');
+  document.getElementById('statExpense').innerHTML =
+    `-${expG}💰` + (expM ? ` <span style="font-size:14px;">-${expM}💎</span>` : '');
+  const netG = incomeG - expG;
+  const netM = incomeM - expM;
+  document.getElementById('statNet').innerHTML =
+    `${netG >= 0 ? '+' : ''}${netG}💰` + (netM ? ` <span style="font-size:14px;">${netM >= 0 ? '+' : ''}${netM}💎</span>` : '');
+
+  // List
+  const el = document.getElementById('ledgerList');
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📜</div>這段時間還沒有任何紀錄</div>`;
+    return;
+  }
+
+  // Group by day
+  const groups = {};
+  filtered.forEach(e => {
+    const d = new Date(e.ts);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(e);
+  });
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+
+  el.innerHTML = Object.keys(groups).map(dateKey => {
+    const entries = groups[dateKey];
+    const [y, m, d] = dateKey.split('-').map(Number);
+    const date = new Date(y, m-1, d);
+    let label = `${m}/${d}`;
+    if (date.getTime() === today.getTime()) label = '今天 ' + label;
+    else if (date.getTime() === yesterday.getTime()) label = '昨天 ' + label;
+    else {
+      const days = ['日','一','二','三','四','五','六'];
+      label += ` (${days[date.getDay()]})`;
+    }
+
+    // Day total
+    let dayG = 0, dayM = 0;
+    entries.forEach(e => {
+      const sign = e.type === 'income' ? 1 : -1;
+      dayG += sign * e.gold;
+      dayM += sign * e.gem;
+    });
+    const dayTotal = `${dayG >= 0 ? '+' : ''}${dayG}💰` + (dayM ? ` ${dayM >= 0 ? '+' : ''}${dayM}💎` : '');
+
+    return `
+      <div class="ledger-day">
+        <div class="ledger-day-header">
+          <span>${label}</span>
+          <span style="color:${dayG >= 0 ? 'var(--hp)' : 'var(--danger)'}">${dayTotal}</span>
+        </div>
+        ${entries.map(e => {
+          const t = new Date(e.ts);
+          const time = `${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
+          const sign = e.type === 'income' ? '+' : '-';
+          const cls = e.type === 'income' ? 'income' : 'expense';
+          const parts = [];
+          if (e.gold) parts.push(`${sign}${e.gold}💰`);
+          if (e.gem) parts.push(`${sign}${e.gem}💎`);
+          return `
+            <div class="ledger-entry">
+              <div class="ledger-time">${time}</div>
+              <div class="ledger-desc">${escapeHtml(e.desc)}</div>
+              <div class="ledger-amount ${cls}">${parts.join(' ')}</div>
+              <button class="ledger-del" onclick="deleteLedgerEntry(${e.id})" title="刪除">✕</button>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }).join('');
+}
+
+function deleteLedgerEntry(id) {
+  if (!confirm('刪除這筆紀錄？（不會退回金幣）')) return;
+  state.ledger = state.ledger.filter(e => e.id !== id);
+  saveState(); renderLedger();
+}
+
+function openAddEntry() {
+  document.getElementById('eDesc').value = '';
+  document.getElementById('eGold').value = '0';
+  document.getElementById('eGem').value = '0';
+  document.getElementById('eType').value = 'income';
+  document.getElementById('entryModalBg').classList.add('show');
+  setTimeout(() => document.getElementById('eDesc').focus(), 100);
+}
+
+function closeEntryModal() {
+  document.getElementById('entryModalBg').classList.remove('show');
+}
+
+function saveEntry() {
+  const desc = document.getElementById('eDesc').value.trim();
+  if (!desc) { alert('請輸入說明'); return; }
+  const gold = Math.abs(parseInt(document.getElementById('eGold').value) || 0);
+  const gem = Math.abs(parseInt(document.getElementById('eGem').value) || 0);
+  const type = document.getElementById('eType').value;
+  if (!gold && !gem) { alert('金幣或抽卡至少要填一個'); return; }
+
+  if (type === 'income') {
+    state.gold += gold;
+    state.gem += gem;
+  } else {
+    if (state.gold < gold) { alert('金幣不夠扣！'); return; }
+    if (state.gem < gem) { alert('抽卡資源不夠扣！'); return; }
+    state.gold -= gold;
+    state.gem -= gem;
+  }
+  addLedger(desc, gold, gem, type);
+  saveState(); render(); closeEntryModal();
+  toast(type === 'income' ? '已記錄收入' : '已記錄支出');
+}
+
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+function weekStr() {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Monday start
+  const monday = new Date(d.setDate(diff));
+  return `${monday.getFullYear()}-${monday.getMonth()+1}-${monday.getDate()}`;
+}
+
+function xpForLevel(lv) { return 100 * lv * lv; }
+
+// === RESET CHECK ===
+function checkResets() {
+  if (state.lastDailyReset !== todayStr()) {
+    state.quests.daily.forEach(q => q.done = false);
+    state.lastDailyReset = todayStr();
+  }
+  if (state.lastWeeklyReset !== weekStr()) {
+    state.quests.weekly.forEach(q => q.done = false);
+    state.lastWeeklyReset = weekStr();
+  }
+  saveState();
+}
+
+// === RENDER ===
+function render() {
+  document.getElementById('charName').textContent = state.name;
+  document.getElementById('avatar').textContent = state.avatar;
+  document.getElementById('levelBadge').textContent = `LV.${state.level}`;
+  const need = xpForLevel(state.level);
+  document.getElementById('xpText').textContent = `${state.xp} / ${need} XP`;
+  document.getElementById('xpFill').style.width = Math.min(100, state.xp / need * 100) + '%';
+  document.getElementById('goldValue').textContent = state.gold;
+  document.getElementById('gemValue').textContent = state.gem;
+
+  document.getElementById('dailyReset').textContent = `每日 04:00 重置 · 今日 ${state.quests.daily.filter(q=>q.done).length}/${state.quests.daily.length}`;
+  document.getElementById('weeklyReset').textContent = `每週一重置 · 本週 ${state.quests.weekly.filter(q=>q.done).length}/${state.quests.weekly.length}`;
+
+  renderList('daily');
+  renderList('weekly');
+  renderList('event');
+}
+
+function renderList(type) {
+  const el = document.getElementById(type + 'List');
+  const list = state.quests[type];
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📜</div>還沒有任務，點上方「+ 新增」開始吧</div>`;
+    return;
+  }
+  el.innerHTML = list.map(q => `
+    <div class="quest ${q.done ? 'done' : ''}">
+      <div class="quest-check" onclick="toggleQuest('${type}', ${q.id})">${q.done ? '✓' : ''}</div>
+      <div class="quest-body">
+        <div class="quest-name">${escapeHtml(q.name)}</div>
+        <div class="quest-rewards">
+          ${q.gold ? `<span class="reward-gold">+${q.gold}💰</span> ` : ''}
+          ${q.gem ? `<span class="reward-gem">+${q.gem}💎</span> ` : ''}
+          ${q.xp ? `<span class="reward-xp">+${q.xp}⚡</span>` : ''}
+        </div>
+      </div>
+      <button class="quest-del" onclick="deleteQuest('${type}', ${q.id})" title="刪除">✕</button>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// === QUEST ACTIONS ===
+function toggleQuest(type, id) {
+  const q = state.quests[type].find(x => x.id === id);
+  if (!q) return;
+  if (q.done) {
+    // undo
+    q.done = false;
+    state.gold = Math.max(0, state.gold - q.gold);
+    state.gem = Math.max(0, state.gem - q.gem);
+    state.xp = Math.max(0, state.xp - q.xp);
+    if (q.gold || q.gem) addLedger(`[取消] ${q.name}`, q.gold, q.gem, 'expense');
+  } else {
+    q.done = true;
+    state.gold += q.gold;
+    state.gem += q.gem;
+    addXp(q.xp);
+    if (q.gold || q.gem) {
+      const label = type === 'daily' ? '每日' : type === 'weekly' ? '每週' : '活動';
+      addLedger(`[${label}] ${q.name}`, q.gold, q.gem, 'income');
+    }
+    toast(`+${q.gold}💰 +${q.gem}💎 +${q.xp}⚡`);
+    if (type === 'event') {
+      // event auto-removes after a moment
+      setTimeout(() => {
+        state.quests.event = state.quests.event.filter(x => x.id !== id);
+        saveState(); render();
+      }, 800);
+    }
+  }
+  saveState(); render();
+}
+
+function addXp(amount) {
+  state.xp += amount;
+  while (state.xp >= xpForLevel(state.level)) {
+    state.xp -= xpForLevel(state.level);
+    state.level += 1;
+    showLevelUp();
+  }
+}
+
+function deleteQuest(type, id) {
+  if (!confirm('確定刪除這個任務？')) return;
+  state.quests[type] = state.quests[type].filter(q => q.id !== id);
+  saveState(); render();
+}
+
+// === MODAL ===
+let editingType = null;
+function openAddQuest(type) {
+  editingType = type;
+  document.getElementById('modalTitle').textContent = `新增${type === 'daily' ? '每日' : type === 'weekly' ? '每週' : '活動'}任務`;
+  document.getElementById('qName').value = '';
+  document.getElementById('qGold').value = type === 'daily' ? 10 : type === 'weekly' ? 50 : 30;
+  document.getElementById('qGem').value = type === 'daily' ? 1 : type === 'weekly' ? 5 : 3;
+  document.getElementById('qXp').value = type === 'daily' ? 20 : type === 'weekly' ? 80 : 50;
+  document.getElementById('modalBg').classList.add('show');
+  setTimeout(() => document.getElementById('qName').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('modalBg').classList.remove('show');
+}
+
+function saveQuest() {
+  const name = document.getElementById('qName').value.trim();
+  if (!name) { alert('請輸入任務名稱'); return; }
+  const gold = parseInt(document.getElementById('qGold').value) || 0;
+  const gem = parseInt(document.getElementById('qGem').value) || 0;
+  const xp = parseInt(document.getElementById('qXp').value) || 0;
+  state.quests[editingType].push({
+    id: Date.now(), name, gold, gem, xp, done: false
+  });
+  saveState(); render(); closeModal();
+}
+
+// === TABS ===
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    ['daily','weekly','event','gacha','ledger'].forEach(name => {
+      document.getElementById('panel-' + name).style.display = name === t.dataset.tab ? 'block' : 'none';
+    });
+    if (t.dataset.tab === 'ledger') renderLedger();
+  });
+});
+
+// === GACHA ===
+const GACHA_PRIZES = [
+  { name: '⭐ 普通獎勵：放空5分鐘', weight: 40 },
+  { name: '✨ 不錯：聽一首喜歡的歌', weight: 30 },
+  { name: '💫 好運：給自己一個小休息', weight: 20 },
+  { name: '🌟 稀有：解鎖一個小確幸', weight: 8 },
+  { name: '👑 SSR！今日好運加倍！', weight: 2 },
+];
+
+function pickPrize() {
+  const total = GACHA_PRIZES.reduce((s, p) => s + p.weight, 0);
+  let r = Math.random() * total;
+  for (const p of GACHA_PRIZES) {
+    r -= p.weight;
+    if (r <= 0) return p.name;
+  }
+  return GACHA_PRIZES[0].name;
+}
+
+function doGacha() {
+  const cost = parseInt(document.getElementById('gachaCost').value) || 0;
+  if (cost < 1) { alert('金幣花費要大於 0'); return; }
+  if (state.gold < cost) { toast('💰 金幣不夠！'); return; }
+  if (state.gem < 1) { toast('💎 抽卡資源不夠！'); return; }
+
+  state.gold -= cost;
+  state.gem -= 1;
+  addLedger(`[抽卡] 抽一次`, cost, 1, 'expense');
+  saveState(); render();
+
+  const machine = document.getElementById('gachaMachine');
+  const result = document.getElementById('gachaResult');
+  const btn = document.getElementById('gachaBtn');
+  machine.classList.add('spinning');
+  result.classList.remove('win');
+  result.textContent = '抽卡中...';
+  btn.disabled = true;
+
+  setTimeout(() => {
+    machine.classList.remove('spinning');
+    const prize = pickPrize();
+    result.textContent = prize;
+    result.classList.add('win');
+    btn.disabled = false;
+  }, 1200);
+}
+
+// === SPEND ===
+function spendGold() {
+  const amt = parseInt(document.getElementById('spendAmount').value) || 0;
+  if (amt < 1) { alert('請輸入金額'); return; }
+  if (state.gold < amt) { toast('💰 金幣不夠！'); return; }
+  const desc = prompt(`花了 ${amt} 💰 在哪？（可不填）`, '消費');
+  if (desc === null) return; // cancelled
+  state.gold -= amt;
+  addLedger(`[消費] ${desc.trim() || '消費'}`, amt, 0, 'expense');
+  document.getElementById('spendAmount').value = '';
+  saveState(); render();
+  toast(`-${amt}💰 已扣除`);
+}
+
+// === TOAST ===
+let toastTimer;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// === LEVEL UP ===
+function showLevelUp() {
+  const el = document.getElementById('levelUp');
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1500);
+}
+
+// === CHAR EDIT ===
+document.getElementById('charName').addEventListener('click', () => {
+  const newName = prompt('改個名字吧！', state.name);
+  if (newName && newName.trim()) {
+    state.name = newName.trim();
+    saveState(); render();
+  }
+});
+
+document.getElementById('avatar').addEventListener('click', () => {
+  const emojis = ['🧙','🧝','🧛','🧚','🦸','🥷','👑','🦊','🐱','🐉','🤖','👻'];
+  const idx = emojis.indexOf(state.avatar);
+  state.avatar = emojis[(idx + 1) % emojis.length];
+  saveState(); render();
+});
+
+// === IMPORT / EXPORT ===
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `lifequest-${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        state = Object.assign(defaultState(), data);
+        saveState(); render();
+        toast('匯入成功！');
+      } catch (err) { alert('檔案格式錯誤'); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function resetAll() {
+  if (!confirm('確定重置全部資料？這個動作無法復原！')) return;
+  if (!confirm('真的真的確定？所有任務、金幣、等級都會清空喔！')) return;
+  state = defaultState();
+  saveState(); render();
+  toast('已重置！');
+}
+
+// === INIT ===
+checkResets();
+render();
+
+// Close modal on bg click
+document.getElementById('modalBg').addEventListener('click', e => {
+  if (e.target.id === 'modalBg') closeModal();
+});
+document.getElementById('entryModalBg').addEventListener('click', e => {
+  if (e.target.id === 'entryModalBg') closeEntryModal();
+});
+</script>
+
+</body>
+</html>
