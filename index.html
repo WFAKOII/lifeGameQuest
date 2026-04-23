@@ -1612,7 +1612,16 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState();
     const s = JSON.parse(raw);
-    return Object.assign(defaultState(), s);
+    const merged = Object.assign(defaultState(), s);
+    // Migration: replace old 銘謝惠顧 with challenge ticket prize
+    if (merged.gachaPrizes) {
+      merged.gachaPrizes = merged.gachaPrizes.map(p =>
+        p.name === '銘謝惠顧'
+          ? { id: p.id, name: '挑戰卷', emoji: '🎫', rarity: 'N', weight: p.weight || 50, noItem: true, ticketMin: 1, ticketMax: 5 }
+          : p
+      );
+    }
+    return merged;
   } catch (e) { return defaultState(); }
 }
 
@@ -2665,7 +2674,7 @@ let rpgBattle = null;
 function openRpg() {
   document.getElementById('rpgPage').style.display = 'block';
   document.body.style.overflow = 'hidden';
-  renderRpgLobby();
+  switchRpgTab('battle');
 }
 
 function closeRpg() {
@@ -2865,11 +2874,18 @@ function rpgBackToLobby() {
 // === RPG TABS ===
 function switchRpgTab(tab) {
   ['battle','char','skills'].forEach(t => {
-    document.getElementById(`rpgSection_${t}`).style.display = t === tab ? '' : 'none';
-    document.getElementById(`rpgTab_${t}`).classList.toggle('active', t === tab);
+    const sec = document.getElementById(`rpgSection_${t}`);
+    const btn = document.getElementById(`rpgTab_${t}`);
+    if (sec) sec.style.display = t === tab ? '' : 'none';
+    if (btn) btn.classList.toggle('active', t === tab);
   });
-  if (tab === 'char')   renderRpgChar();
-  if (tab === 'skills') renderSkillsTab();
+  try {
+    if (tab === 'battle') renderRpgLobby();
+    if (tab === 'char')   renderRpgChar();
+    if (tab === 'skills') renderSkillsTab();
+  } catch(e) {
+    console.error('switchRpgTab render error:', e);
+  }
 }
 
 function renderRpgChar() {
