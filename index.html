@@ -1128,6 +1128,20 @@
 .result-title { font-family:'Press Start 2P',monospace; font-size:14px; color:var(--gold); margin-bottom:12px; }
 .result-rewards { font-size:20px; margin-bottom:24px; }
 .result-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+
+/* Stat allocation */
+.stat-row { margin-bottom:10px; }
+.stat-header { display:flex; align-items:center; gap:6px; margin-bottom:3px; font-size:13px; }
+.stat-header span:last-child { margin-left:auto; }
+.stat-bar-wrap { height:8px; background:var(--bg-deep); border:1px solid var(--border); border-radius:4px; overflow:hidden; margin-bottom:4px; }
+.stat-bar-fill { height:100%; border-radius:4px; transition:width 0.3s; }
+.stat-btns { display:flex; gap:4px; justify-content:flex-end; }
+.btn-sm { padding:1px 8px; font-size:13px; border:1px solid var(--border); background:var(--bg-card); color:var(--text); border-radius:4px; cursor:pointer; }
+.btn-sm:hover:not([disabled]) { border-color:var(--gold); }
+.btn-sm[disabled] { opacity:0.35; cursor:not-allowed; }
+.equip-slot { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid var(--border); font-size:13px; }
+.skill-entry { padding:10px; border:1px solid var(--border); border-radius:6px; margin-bottom:8px; background:var(--bg-card); }
+.skill-entry.locked { opacity:0.45; }
 </style>
 </head>
 <body>
@@ -1577,10 +1591,10 @@ function defaultState() {
     inventory: [],
     challengeTickets: 3,
     statPoints: 0,
-    allocatedStats: { str: 0, vit: 0, def: 0 },
+    allocatedStats: { str: 0, int: 0, vit: 0, agi: 0, crt: 0 },
     equipment: { weapon: null, armor: null, accessory: null },
     gachaPrizes: [
-      { id: 1, name: '銘謝惠顧',    emoji: '🙏', rarity: 'N',   weight: 50, noItem: true },
+      { id: 1, name: '挑戰卷',      emoji: '🎫', rarity: 'N',   weight: 50, noItem: true, ticketMin: 1, ticketMax: 5 },
       { id: 2, name: '50元娛樂點',  emoji: '🎮', rarity: 'N',   weight: 25 },
       { id: 3, name: '100元娛樂點', emoji: '🎯', rarity: 'R',   weight: 14 },
       { id: 4, name: '150元娛樂點', emoji: '🎁', rarity: 'SR',  weight:  7 },
@@ -1598,7 +1612,16 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState();
     const s = JSON.parse(raw);
-    return Object.assign(defaultState(), s);
+    const merged = Object.assign(defaultState(), s);
+    // Migration: replace old 銘謝惠顧 with challenge ticket prize
+    if (merged.gachaPrizes) {
+      merged.gachaPrizes = merged.gachaPrizes.map(p =>
+        p.name === '銘謝惠顧'
+          ? { id: p.id, name: '挑戰卷', emoji: '🎫', rarity: 'N', weight: p.weight || 50, noItem: true, ticketMin: 1, ticketMax: 5 }
+          : p
+      );
+    }
+    return merged;
   } catch (e) { return defaultState(); }
 }
 
@@ -2430,7 +2453,12 @@ function doGacha() {
   setTimeout(() => {
     machine.classList.remove('spinning');
     const prize = pickPrize();
-    if (!prize.noItem) {
+    let displayName = prize.name;
+    if (prize.ticketMin != null && prize.ticketMax != null) {
+      const n = Math.floor(Math.random() * (prize.ticketMax - prize.ticketMin + 1)) + prize.ticketMin;
+      state.challengeTickets = (state.challengeTickets || 0) + n;
+      displayName = `${prize.name} ×${n}`;
+    } else if (!prize.noItem) {
       if (!state.inventory) state.inventory = [];
       const existing = state.inventory.find(i => i.name === prize.name);
       if (existing) { existing.count++; } else {
@@ -2441,7 +2469,7 @@ function doGacha() {
     const col = RARITY_COLOR[prize.rarity] || RARITY_COLOR.N;
     const lbl = RARITY_LABEL[prize.rarity] || prize.rarity || 'N';
     result.className = `gacha-result win rarity-${prize.rarity || 'N'}`;
-    result.innerHTML = `${prize.emoji || '🎁'} ${escapeHtml(prize.name)}<br><span style="font-size:12px;color:${col};border:1px solid ${col};padding:1px 8px;border-radius:2px;">${lbl}</span>`;
+    result.innerHTML = `${prize.emoji || '🎁'} ${escapeHtml(displayName)}<br><span style="font-size:12px;color:${col};border:1px solid ${col};padding:1px 8px;border-radius:2px;">${lbl}</span>`;
     btn.disabled = false;
     renderInventory();
   }, 1200);
@@ -2613,9 +2641,32 @@ const RPG_SKILLS = [
   { id:'ult',   name:'必殺技',   emoji:'⚡',  minLv:60, cooldown:6, desc:'ATK×3 無視防禦' },
 ];
 
+const STAT_DEFS = [
+  { key:'str', name:'STR', label:'力量', color:'#e74c3c', desc:'每點 +5 ATK' },
+  { key:'int', name:'INT', label:'智力', color:'#3498db', desc:'每點 +4 MATK' },
+  { key:'vit', name:'VIT', label:'體力', color:'#2ecc71', desc:'每點 +20 HP / +1 DEF' },
+  { key:'agi', name:'AGI', label:'敏捷', color:'#f39c12', desc:'每點 +1% 閃避（上限40%）' },
+  { key:'crt', name:'CRT', label:'暴擊', color:'#9b59b6', desc:'每點 +1% 暴擊（上限50%，×1.5）' },
+];
+
+const EQUIP_SLOTS = [
+  { key:'weapon',    label:'武器', emoji:'🗡' },
+  { key:'armor',     label:'防具', emoji:'🛡' },
+  { key:'accessory', label:'飾品', emoji:'💍' },
+];
+
 function getRpgStats() {
   const lv = state.level;
-  return { maxHp: lv * 10 + 50, atk: lv * 2 + 10, def: lv + 3 };
+  const a = state.allocatedStats || {};
+  const str = a.str||0, int_ = a.int||0, vit = a.vit||0, agi = a.agi||0, crt = a.crt||0;
+  return {
+    maxHp: lv * 10 + 50 + vit * 20,
+    atk:   lv * 2  + 10 + str * 5,
+    matk:  10 + int_ * 4,
+    def:   lv      +  3 + vit,
+    dodge: Math.min(40, agi),
+    crit:  Math.min(50, crt),
+  };
 }
 
 let rpgBattle = null;
@@ -2623,7 +2674,7 @@ let rpgBattle = null;
 function openRpg() {
   document.getElementById('rpgPage').style.display = 'block';
   document.body.style.overflow = 'hidden';
-  renderRpgLobby();
+  switchRpgTab('battle');
 }
 
 function closeRpg() {
@@ -2759,6 +2810,11 @@ function useRpgSkill(skillId) {
     rpgLog(`${skill.emoji} 必殺技 🎲${d1} → 造成 ${playerDmg} 傷害（無視防禦）`);
   }
 
+  if (playerDmg > 0 && stats.crit > 0 && Math.random() * 100 < stats.crit) {
+    playerDmg = Math.floor(playerDmg * 1.5);
+    rpgLog(`💥 暴擊！傷害變為 ${playerDmg}`);
+  }
+
   rpgBattle.monsterHp -= playerDmg;
   updateRpgHpBars();
 
@@ -2771,6 +2827,11 @@ function useRpgSkill(skillId) {
 }
 
 function rpgMonsterAttack(stats) {
+  if (stats.dodge > 0 && Math.random() * 100 < stats.dodge) {
+    rpgLog(`${state.avatar} 閃避了攻擊！`);
+    renderRpgSkills();
+    return;
+  }
   const md = rpgRollDice();
   const mDmg = Math.max(1, rpgBattle.monster.atk + md - Math.floor(stats.def / 3));
   rpgBattle.playerHp -= mDmg;
@@ -2809,6 +2870,120 @@ function rpgBackToLobby() {
   renderRpgLobby();
 }
 
+
+// === RPG TABS ===
+function switchRpgTab(tab) {
+  ['battle','char','skills'].forEach(t => {
+    const sec = document.getElementById(`rpgSection_${t}`);
+    const btn = document.getElementById(`rpgTab_${t}`);
+    if (sec) sec.style.display = t === tab ? '' : 'none';
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
+  try {
+    if (tab === 'battle') renderRpgLobby();
+    if (tab === 'char')   renderRpgChar();
+    if (tab === 'skills') renderSkillsTab();
+  } catch(e) {
+    console.error('switchRpgTab render error:', e);
+  }
+}
+
+function renderRpgChar() {
+  const stats = getRpgStats();
+  const a = state.allocatedStats || {};
+  const pts = state.statPoints || 0;
+  const totalAllocated = STAT_DEFS.reduce((s, d) => s + (a[d.key]||0), 0);
+  const maxAlloc = state.level - 1;
+
+  const derivedRows = [
+    ['MaxHP', stats.maxHp], ['ATK', stats.atk], ['MATK', stats.matk],
+    ['DEF', stats.def], ['閃避', `${stats.dodge}%`], ['暴擊', `${stats.crit}%`],
+  ];
+
+  const equippedHtml = (EQUIP_SLOTS || []).map(sl => {
+    const item = (state.equipment || {})[sl.key];
+    return `<div class="equip-slot">
+      <span>${sl.emoji} ${sl.label}</span>
+      <span>${item ? `${item.name} <button class="btn-sm" onclick="unequipItem('${sl.key}')">卸下</button>` : '空'}</span>
+    </div>`;
+  }).join('');
+
+  const statBarsHtml = STAT_DEFS.map(d => {
+    const val = a[d.key] || 0;
+    const barPct = maxAlloc > 0 ? (val / Math.max(maxAlloc, 1)) * 100 : 0;
+    return `<div class="stat-row">
+      <div class="stat-header">
+        <span style="color:${d.color};font-weight:700">${d.name}</span>
+        <span style="font-size:11px;color:var(--text-muted)">${d.label} ${d.desc}</span>
+        <span style="font-weight:700">${val}</span>
+      </div>
+      <div class="stat-bar-wrap">
+        <div class="stat-bar-fill" style="width:${barPct}%;background:${d.color}"></div>
+      </div>
+      <div class="stat-btns">
+        <button class="btn-sm" onclick="deallocateStat('${d.key}')" ${val<=0?'disabled':''}>−</button>
+        <button class="btn-sm" onclick="allocateStat('${d.key}')"   ${pts<=0?'disabled':''}>+</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('rpgCharContent').innerHTML = `
+    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:140px;">
+        <div style="font-size:12px;font-weight:700;margin-bottom:6px;color:var(--text-muted)">基礎數值</div>
+        ${derivedRows.map(([k,v])=>`<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border)"><span>${k}</span><span style="font-weight:700">${v}</span></div>`).join('')}
+        <div style="margin-top:10px;font-size:12px;font-weight:700;color:var(--text-muted)">裝備</div>
+        <div style="margin-top:4px">${equippedHtml || '<span style="color:var(--text-muted);font-size:12px">無裝備欄位</span>'}</div>
+      </div>
+      <div style="flex:1.5;min-width:200px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:12px;font-weight:700;color:var(--text-muted)">能力加點</span>
+          <span style="font-size:12px">可用點數：<strong style="color:var(--gem)">${pts}</strong></span>
+        </div>
+        ${statBarsHtml}
+      </div>
+    </div>`;
+}
+
+function allocateStat(key) {
+  if ((state.statPoints || 0) <= 0) { toast('沒有可用點數！'); return; }
+  state.statPoints--;
+  state.allocatedStats[key] = (state.allocatedStats[key] || 0) + 1;
+  saveState();
+  renderRpgChar();
+}
+
+function deallocateStat(key) {
+  if ((state.allocatedStats[key] || 0) <= 0) return;
+  state.allocatedStats[key]--;
+  state.statPoints = (state.statPoints || 0) + 1;
+  saveState();
+  renderRpgChar();
+}
+
+function unequipItem(slot) {
+  const item = (state.equipment || {})[slot];
+  if (!item) return;
+  state.equipment[slot] = null;
+  state.inventory.push({ ...item, count: 1 });
+  saveState();
+  renderRpgChar();
+}
+
+function renderSkillsTab() {
+  document.getElementById('rpgSkillsContent').innerHTML = RPG_SKILLS.map(sk => {
+    const unlocked = state.level >= sk.minLv;
+    return `<div class="skill-entry ${unlocked ? '' : 'locked'}">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:20px">${sk.emoji}</span>
+        <div>
+          <div style="font-weight:700">${sk.name} ${unlocked ? '' : `<span style="color:var(--text-muted);font-size:11px">（Lv.${sk.minLv} 解鎖）</span>`}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${sk.desc}${sk.cooldown ? `，冷卻 ${sk.cooldown} 回` : ''}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
 
 // === TOAST ===
 let toastTimer;
