@@ -2635,6 +2635,12 @@ const STAT_DEFS = [
   { key:'crt', name:'CRT', label:'暴擊', color:'#9b59b6', desc:'每點 +1% 暴擊（上限50%，×1.5）' },
 ];
 
+const EQUIP_SLOTS = [
+  { key:'weapon',    label:'武器', emoji:'🗡' },
+  { key:'armor',     label:'防具', emoji:'🛡' },
+  { key:'accessory', label:'飾品', emoji:'💍' },
+];
+
 function getRpgStats() {
   const lv = state.level;
   const a = state.allocatedStats || {};
