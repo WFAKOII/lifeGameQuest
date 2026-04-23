@@ -113,6 +113,32 @@
     margin-right: 6px;
   }
 
+  .title-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 13px; color: var(--gem);
+    border: 1px solid var(--gem); padding: 2px 8px;
+    border-radius: 2px; cursor: pointer;
+    font-family: 'VT323', monospace; letter-spacing: 1px;
+    transition: all 0.15s; width: fit-content;
+  }
+  .title-badge:hover { background: var(--bg-panel-light); color: #fff; border-color: #fff; }
+
+  .title-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 8px; max-height: 58vh; overflow-y: auto; padding: 4px 0;
+  }
+  .title-card {
+    background: var(--bg-panel-light); border: 2px solid var(--border);
+    border-radius: 4px; padding: 10px 6px; text-align: center;
+    cursor: pointer; transition: border-color 0.1s;
+  }
+  .title-card:hover:not(.locked) { border-color: var(--gem); }
+  .title-card.active { border-color: var(--gold); background: rgba(255,213,79,0.08); }
+  .title-card.locked { opacity: 0.3; cursor: default; }
+  .title-card-emoji { font-size: 22px; margin-bottom: 4px; }
+  .title-card-name { font-size: 13px; color: var(--text); }
+  .title-card-level { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
   .xp-bar {
     height: 12px;
     background: var(--bg-deep);
@@ -1012,6 +1038,7 @@
     <div class="avatar" id="avatar">🧙</div>
     <div class="char-info">
       <div class="char-name" id="charName" title="點擊修改">勇者</div>
+      <div class="title-badge" id="titleBadge" onclick="openTitleModal()" title="點擊更換稱號">🚶 旅人</div>
       <div>
         <span class="level-badge" id="levelBadge">LV.1</span>
         <span class="xp-text" id="xpText">0 / 100 XP</span>
@@ -1201,6 +1228,18 @@
     <a onclick="exportData()">匯出資料</a>·
     <a onclick="importData()">匯入資料</a>·
     <a onclick="resetAll()">重置全部</a>
+  </div>
+</div>
+
+<!-- Title Modal -->
+<div class="modal-bg" id="titleModalBg">
+  <div class="modal" style="max-width:440px;width:95%;">
+    <div class="modal-title">🏆 選擇稱號</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">升等解鎖新稱號，已解鎖的可自由切換</div>
+    <div class="title-grid" id="titleGrid"></div>
+    <div class="modal-actions" style="margin-top:12px;">
+      <button class="btn btn-cancel" onclick="closeTitleModal()">關閉</button>
+    </div>
   </div>
 </div>
 
@@ -1412,6 +1451,7 @@ function defaultState() {
   return {
     name: '勇者',
     avatar: '🧙',
+    activeTitle: null,
     level: 1,
     xp: 0,
     gold: 0,
@@ -1794,11 +1834,75 @@ function checkResets() {
   saveState();
 }
 
+// === TITLES ===
+const TITLES = [
+  { minLevel:   1, name: '旅人',   emoji: '🚶' },
+  { minLevel:   5, name: '冒險者', emoji: '🗺' },
+  { minLevel:  10, name: '劍士',   emoji: '🗡' },
+  { minLevel:  20, name: '騎士',   emoji: '🛡' },
+  { minLevel:  30, name: '勇士',   emoji: '⚔' },
+  { minLevel:  40, name: '鬥士',   emoji: '🥊' },
+  { minLevel:  50, name: '勇者',   emoji: '⚡' },
+  { minLevel:  60, name: '精銳',   emoji: '🔥' },
+  { minLevel:  70, name: '戰士',   emoji: '🪖' },
+  { minLevel:  80, name: '菁英',   emoji: '💪' },
+  { minLevel:  90, name: '王者',   emoji: '👑' },
+  { minLevel: 100, name: '英雄',   emoji: '🌟' },
+  { minLevel: 120, name: '傳奇',   emoji: '💫' },
+  { minLevel: 140, name: '神話',   emoji: '🌙' },
+  { minLevel: 160, name: '半神',   emoji: '🌠' },
+  { minLevel: 180, name: '守護神', emoji: '🌈' },
+  { minLevel: 200, name: '神',     emoji: '✨' },
+  { minLevel: 225, name: '戰神',   emoji: '🌩' },
+  { minLevel: 250, name: '至高神', emoji: '🔆' },
+  { minLevel: 275, name: '創世神', emoji: '🌌' },
+  { minLevel: 300, name: '永恆',   emoji: '♾' },
+];
+
+function getActiveTitle() {
+  const unlocked = TITLES.filter(t => t.minLevel <= state.level);
+  const base = unlocked.length ? unlocked[unlocked.length - 1] : TITLES[0];
+  if (state.activeTitle) {
+    const found = TITLES.find(t => t.name === state.activeTitle);
+    if (found && found.minLevel <= state.level) return found;
+  }
+  return base;
+}
+
+function openTitleModal() {
+  renderTitleGrid();
+  document.getElementById('titleModalBg').classList.add('show');
+}
+function closeTitleModal() { document.getElementById('titleModalBg').classList.remove('show'); }
+
+function renderTitleGrid() {
+  const active = getActiveTitle();
+  document.getElementById('titleGrid').innerHTML = TITLES.map(t => {
+    const unlocked = t.minLevel <= state.level;
+    const isActive = t.name === active.name;
+    const cls = ['title-card', isActive ? 'active' : '', unlocked ? '' : 'locked'].filter(Boolean).join(' ');
+    const click = unlocked ? `onclick="selectTitle('${t.name}')"` : '';
+    return `<div class="${cls}" ${click}>
+      <div class="title-card-emoji">${t.emoji}</div>
+      <div class="title-card-name">${t.name}</div>
+      <div class="title-card-level">Lv.${t.minLevel}${unlocked ? '' : ' 🔒'}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectTitle(name) {
+  state.activeTitle = name;
+  saveState(); render();
+  renderTitleGrid();
+}
+
 // === RENDER ===
 function render() {
   document.getElementById('charName').textContent = state.name;
   document.getElementById('avatar').textContent = state.avatar;
   document.getElementById('levelBadge').textContent = `LV.${state.level}`;
+  const at = getActiveTitle();
+  document.getElementById('titleBadge').textContent = `${at.emoji} ${at.name}`;
   const need = xpForLevel(state.level);
   document.getElementById('xpText').textContent = `${state.xp} / ${need} XP`;
   document.getElementById('xpFill').style.width = Math.min(100, state.xp / need * 100) + '%';
