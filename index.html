@@ -825,6 +825,66 @@
 
   .acct-btn.add-acct { color: var(--text-muted); }
 
+  /* === ACCOUNT OVERVIEW === */
+  .acct-overview {
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 12px;
+  }
+
+  .acct-overview-hdr {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .acct-overview-title {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    color: var(--text-muted);
+  }
+
+  .acct-net {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+  }
+
+  .acct-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 2px;
+    border-bottom: 1px solid rgba(74,84,144,0.2);
+    font-size: 16px;
+  }
+
+  .acct-item:last-child { border-bottom: none; }
+  .acct-name { flex: 1; color: var(--text); }
+
+  .acct-bal {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    min-width: 60px;
+    text-align: right;
+  }
+
+  .acct-edit-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 2px 6px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .acct-item:hover .acct-edit-btn { opacity: 1; }
+  .acct-edit-btn:hover { color: var(--gold); }
+
   /* === CLOUD SYNC === */
   .cloud-bar {
     background: var(--bg-panel);
@@ -1012,6 +1072,8 @@
       <button class="add-btn" onclick="openAddEntry()">+ 手動</button>
     </div>
 
+    <div id="acctOverview"></div>
+
     <div class="filter-row">
       <button class="filter-btn active" data-period="today" onclick="setLedgerPeriod('today')">今日</button>
       <button class="filter-btn" data-period="week" onclick="setLedgerPeriod('week')">本週</button>
@@ -1170,6 +1232,39 @@
   </div>
 </div>
 
+<!-- Account Edit Modal -->
+<div class="modal-bg" id="acctEditModalBg">
+  <div class="modal">
+    <div class="modal-title" id="acctEditTitle">編輯帳戶</div>
+    <input type="hidden" id="acctEditId">
+    <div class="field">
+      <label>初始餘額</label>
+      <input type="number" id="acctEditBalance" value="0">
+    </div>
+    <div class="field">
+      <label>帳戶類型</label>
+      <div style="display:flex;gap:8px;">
+        <button type="button" id="acctTypeAsset" onclick="setAcctType(false)"
+          style="flex:1;padding:8px;font-family:'VT323',monospace;font-size:16px;border-radius:2px;cursor:pointer;border:2px solid;transition:all 0.15s;">
+          💰 資產
+        </button>
+        <button type="button" id="acctTypeLiab" onclick="setAcctType(true)"
+          style="flex:1;padding:8px;font-family:'VT323',monospace;font-size:16px;border-radius:2px;cursor:pointer;border:2px solid;transition:all 0.15s;">
+          📛 負債型
+        </button>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">負債型如信用卡、貸款，餘額獨立計算不計入總資產</div>
+    <div class="modal-actions" style="justify-content:space-between;">
+      <button class="btn" style="background:var(--danger);border-color:#c62828;color:#fff;" onclick="deleteAccountFromModal()">刪除帳戶</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-cancel" onclick="closeAcctEditModal()">取消</button>
+        <button class="btn btn-ok" onclick="saveAcctEdit()">儲存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -1200,9 +1295,9 @@ function defaultState() {
       event: [],
     },
     accounts: [
-      { id: 1, name: '現金',   emoji: '💵' },
-      { id: 2, name: '銀行',   emoji: '🏦' },
-      { id: 3, name: '信用卡', emoji: '💳' },
+      { id: 1, name: '現金',   emoji: '💵', initialBalance: 0, isLiability: false },
+      { id: 2, name: '銀行',   emoji: '🏦', initialBalance: 0, isLiability: false },
+      { id: 3, name: '信用卡', emoji: '💳', initialBalance: 0, isLiability: true  },
     ],
     ledger: [],
     lastDailyReset: todayStr(),
@@ -1226,17 +1321,13 @@ function saveState() {
 }
 
 // === LEDGER ===
-function addLedger(desc, gold, gem, type, countsAsGold = true, category = null, accountId = null) {
+function addLedger(desc, gold, gem, type, countsAsGold = true, category = null, accountId = null, fromAccountId = null, toAccountId = null) {
   state.ledger.unshift({
     id: Date.now() + Math.random(),
     ts: Date.now(),
-    desc,
-    gold: gold || 0,
-    gem: gem || 0,
-    type,
-    countsAsGold,
-    category,
-    accountId,
+    desc, gold: gold || 0, gem: gem || 0,
+    type, countsAsGold, category, accountId,
+    fromAccountId, toAccountId,
   });
   if (state.ledger.length > 1000) state.ledger.length = 1000;
 }
@@ -1266,6 +1357,7 @@ function periodStart(p) {
 }
 
 function renderLedger() {
+  renderAccountOverview();
   const since = periodStart(ledgerPeriod);
   const filtered = state.ledger.filter(e => e.ts >= since);
 
@@ -1504,7 +1596,7 @@ function saveEntry() {
     const toA   = state.accounts.find(a => a.id === toId);
     const desc  = document.getElementById('eDesc').value.trim() ||
                   `${fromA.emoji}${fromA.name} → ${toA.emoji}${toA.name}`;
-    addLedger(desc, gold, gem, 'expense', false, '↔轉帳', null);
+    addLedger(desc, gold, gem, 'expense', false, '↔轉帳', null, fromId, toId);
     saveState(); render(); closeEntryModal();
     toast('已記錄轉帳');
     return;
@@ -1828,6 +1920,105 @@ function resetAll() {
   toast('已重置！');
 }
 
+// === ACCOUNT BALANCES ===
+function calcAccountBalance(accountId) {
+  const acct = state.accounts.find(a => a.id === accountId);
+  let balance = acct ? (acct.initialBalance || 0) : 0;
+  state.ledger.forEach(e => {
+    if (e.accountId === accountId) {
+      balance += e.type === 'income' ? e.gold : -e.gold;
+    }
+    if (e.fromAccountId === accountId) balance -= e.gold;
+    if (e.toAccountId   === accountId) balance += e.gold;
+  });
+  return balance;
+}
+
+function renderAccountOverview() {
+  const el = document.getElementById('acctOverview');
+  if (!el) return;
+  let totalAssets = 0, totalDebt = 0;
+  state.accounts.forEach(a => {
+    const bal = calcAccountBalance(a.id);
+    if (a.isLiability) totalDebt += bal;
+    else totalAssets += bal;
+  });
+  const net = totalAssets + totalDebt;
+  el.innerHTML = `
+    <div class="acct-overview">
+      <div class="acct-overview-hdr">
+        <span class="acct-overview-title">🏦 帳戶概況</span>
+        <span class="acct-net" style="color:${net >= 0 ? 'var(--hp)' : 'var(--danger)'}">
+          淨資產 ${net >= 0 ? '+' : ''}${net}
+        </span>
+      </div>
+      <div class="stats-row" style="margin-bottom:10px;">
+        <div class="stat-box"><div class="stat-label">總資產</div><div class="stat-value income">${totalAssets}</div></div>
+        <div class="stat-box"><div class="stat-label">負債</div><div class="stat-value expense">${Math.abs(totalDebt)}</div></div>
+        <div class="stat-box"><div class="stat-label">淨資產</div><div class="stat-value net">${net}</div></div>
+      </div>
+      ${state.accounts.map(a => {
+        const bal = calcAccountBalance(a.id);
+        const color = bal >= 0 ? 'var(--hp)' : 'var(--danger)';
+        const debtTag = a.isLiability
+          ? `<span style="font-size:11px;color:var(--danger);border:1px solid var(--danger);padding:1px 3px;border-radius:2px;margin-left:4px;">負債</span>`
+          : '';
+        return `<div class="acct-item">
+          <span class="acct-name">${a.emoji} ${escapeHtml(a.name)}${debtTag}</span>
+          <span class="acct-bal" style="color:${color};">${bal}</span>
+          <button class="acct-edit-btn" onclick="openEditAccount(${a.id})" title="編輯">✏</button>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+let _editAcctIsLiab = false;
+
+function openEditAccount(id) {
+  const acct = state.accounts.find(a => a.id === id);
+  if (!acct) return;
+  document.getElementById('acctEditId').value    = id;
+  document.getElementById('acctEditTitle').textContent = `✏ ${acct.emoji} ${acct.name}`;
+  document.getElementById('acctEditBalance').value    = acct.initialBalance || 0;
+  setAcctType(acct.isLiability || false);
+  document.getElementById('acctEditModalBg').classList.add('show');
+}
+
+function setAcctType(isLiab) {
+  _editAcctIsLiab = isLiab;
+  const asset = document.getElementById('acctTypeAsset');
+  const liab  = document.getElementById('acctTypeLiab');
+  asset.style.cssText += isLiab
+    ? ';background:var(--bg-deep);border-color:var(--border);color:var(--text-muted);'
+    : ';background:var(--hp);border-color:#2e7d32;color:var(--bg-deep);';
+  liab.style.cssText += isLiab
+    ? ';background:var(--danger);border-color:#c62828;color:#fff;'
+    : ';background:var(--bg-deep);border-color:var(--border);color:var(--text-muted);';
+}
+
+function closeAcctEditModal() {
+  document.getElementById('acctEditModalBg').classList.remove('show');
+}
+
+function saveAcctEdit() {
+  const id   = parseInt(document.getElementById('acctEditId').value);
+  const acct = state.accounts.find(a => a.id === id);
+  if (!acct) return;
+  acct.initialBalance = parseFloat(document.getElementById('acctEditBalance').value) || 0;
+  acct.isLiability    = _editAcctIsLiab;
+  saveState(); closeAcctEditModal(); renderAccountOverview();
+}
+
+function deleteAccountFromModal() {
+  const id   = parseInt(document.getElementById('acctEditId').value);
+  const acct = state.accounts.find(a => a.id === id);
+  if (!acct) return;
+  if (!confirm(`刪除帳戶「${acct.emoji}${acct.name}」？\n帳本紀錄不受影響。`)) return;
+  state.accounts = state.accounts.filter(a => a.id !== id);
+  saveState(); closeAcctEditModal(); renderAccountOverview(); renderAccountPicker();
+}
+
 // === GOOGLE DRIVE SYNC ===
 const CLOUD_KEY = 'lifequest_gClientId';
 const DRIVE_FILE  = 'lifequest-v1-sync.json';
@@ -2031,6 +2222,9 @@ document.getElementById('entryModalBg').addEventListener('click', e => {
 });
 document.getElementById('cloudModalBg').addEventListener('click', e => {
   if (e.target.id === 'cloudModalBg') closeCloudModal();
+});
+document.getElementById('acctEditModalBg').addEventListener('click', e => {
+  if (e.target.id === 'acctEditModalBg') closeAcctEditModal();
 });
 </script>
 
