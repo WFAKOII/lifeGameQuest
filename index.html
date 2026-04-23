@@ -1968,8 +1968,8 @@ function escapeHtml(s) {
 
 function rewardHtml(gem, xp) {
   const parts = [];
-  if (gem) parts.push(`<span class="reward-gem">+${gem}💎</span>`);
-  if (xp)  parts.push(`<span class="reward-xp">+${xp}⚡</span>`);
+  if (gem) parts.push(`<span class="reward-gem">💎+${gem}</span>`);
+  if (xp)  parts.push(`<span class="reward-xp">⚡+${xp}</span>`);
   return parts.length ? `<div class="quest-rewards">${parts.join(' ')}</div>` : '';
 }
 
