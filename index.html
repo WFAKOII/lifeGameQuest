@@ -945,6 +945,25 @@
     .gacha-machine { width: 160px; height: 160px; font-size: 72px; }
     .level-up-text { font-size: 22px; }
   }
+
+  /* === CALENDAR === */
+  .cal-wrap { margin-bottom: 14px; }
+  .cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+  .cal-header { font-family:'Press Start 2P',monospace; font-size:7px; color:var(--text-muted); text-align:center; padding:4px 0; }
+  .cal-day {
+    background:var(--bg-deep); border:1px solid var(--border); border-radius:2px;
+    padding:4px 2px; text-align:center; font-size:16px; cursor:pointer;
+    position:relative; min-height:32px; transition:all 0.15s;
+  }
+  .cal-day:hover { border-color:var(--border-bright); }
+  .cal-day.today { border-color:var(--gold); color:var(--gold); }
+  .cal-day.selected { background:var(--bg-panel-light); border-color:var(--xp); }
+  .cal-day.other-month { opacity:0.3; }
+  .cal-day.has-event::after {
+    content:''; position:absolute; bottom:2px; left:50%; transform:translateX(-50%);
+    width:4px; height:4px; border-radius:50%; background:var(--gem);
+  }
 </style>
 </head>
 <body>
@@ -984,7 +1003,7 @@
   <!-- Tabs -->
   <div class="tabs">
     <div class="tab active" data-tab="daily">每日</div>
-    <div class="tab" data-tab="weekly">每週</div>
+    <div class="tab" data-tab="todo">待辦</div>
     <div class="tab" data-tab="event">活動</div>
     <div class="tab" data-tab="gacha">抽卡</div>
     <div class="tab" data-tab="ledger">帳本</div>
@@ -1000,18 +1019,34 @@
       <button class="add-btn" onclick="openAddQuest('daily')">+ 新增</button>
     </div>
     <div class="quest-list" id="dailyList"></div>
+    <div style="margin-top:16px;padding-top:14px;border-top:2px dashed var(--border);">
+      <div class="panel-header" style="cursor:pointer;" onclick="toggleWeeklySection()">
+        <div>
+          <div class="panel-title" style="font-size:10px;">🛡 每週任務 <span id="weeklyArrow">▾</span></div>
+          <div class="reset-info" id="weeklyReset"></div>
+        </div>
+        <button class="add-btn" onclick="event.stopPropagation();openAddQuest('weekly')" style="font-size:8px;">+ 新增</button>
+      </div>
+      <div id="weeklySection">
+        <div class="quest-list" id="weeklyList"></div>
+      </div>
+    </div>
   </div>
 
-  <!-- Weekly -->
-  <div class="panel" id="panel-weekly" style="display:none">
+  <!-- Todo -->
+  <div class="panel" id="panel-todo" style="display:none">
     <div class="panel-header">
-      <div>
-        <div class="panel-title">🛡 每週任務</div>
-        <div class="reset-info" id="weeklyReset"></div>
-      </div>
-      <button class="add-btn" onclick="openAddQuest('weekly')">+ 新增</button>
+      <div class="panel-title">📋 待辦清單</div>
+      <button class="filter-btn" id="todoShowDone" onclick="toggleTodoDoneFilter()" style="font-size:8px;">顯示已完成</button>
     </div>
-    <div class="quest-list" id="weeklyList"></div>
+    <!-- Quick add form -->
+    <div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
+      <input type="text" id="todoInput" placeholder="新增待辦項目..." style="flex:1;min-width:120px;background:var(--bg-deep);border:2px solid var(--border);color:var(--text);padding:8px;font-family:'VT323',monospace;font-size:18px;border-radius:2px;">
+      <input type="date" id="todoDate" style="background:var(--bg-deep);border:2px solid var(--border);color:var(--text-dim);padding:6px;font-family:'VT323',monospace;font-size:14px;border-radius:2px;width:130px;">
+      <button class="add-btn" onclick="openAddTodo()">+ 設定</button>
+      <button class="btn btn-ok" onclick="quickAddTodo()" style="padding:6px 14px;">＋</button>
+    </div>
+    <div class="quest-list" id="todoList"></div>
   </div>
 
   <!-- Event -->
@@ -1022,6 +1057,14 @@
         <div class="reset-info">一次性任務，完成後消失</div>
       </div>
       <button class="add-btn" onclick="openAddQuest('event')">+ 新增</button>
+    </div>
+    <div class="cal-wrap">
+      <div class="cal-nav">
+        <button class="cloud-btn" onclick="calPrev()">‹</button>
+        <span id="calTitle" style="font-family:'Press Start 2P',monospace;font-size:9px;color:var(--text);"></span>
+        <button class="cloud-btn" onclick="calNext()">›</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
     </div>
     <div class="quest-list" id="eventList"></div>
   </div>
@@ -1123,6 +1166,10 @@
       <label>任務名稱</label>
       <input type="text" id="qName" placeholder="例：運動 30 分鐘">
     </div>
+    <div class="field" id="qDateField" style="display:none;">
+      <label>日期（選填）</label>
+      <input type="date" id="qDate">
+    </div>
     <div class="field-row">
       <div class="field">
         <label>💰 金幣</label>
@@ -1140,6 +1187,35 @@
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeModal()">取消</button>
       <button class="btn btn-ok" onclick="saveQuest()">確認</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Todo Modal -->
+<div class="modal-bg" id="todoModalBg">
+  <div class="modal">
+    <div class="modal-title">📋 新增待辦</div>
+    <div class="field">
+      <label>項目名稱</label>
+      <input type="text" id="tdName" placeholder="例：繳交作業">
+    </div>
+    <div class="field">
+      <label>截止日期（選填）</label>
+      <input type="date" id="tdDate">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>💰 金幣獎勵</label>
+        <input type="number" id="tdGold" value="0" min="0">
+      </div>
+      <div class="field">
+        <label>⚡ XP 獎勵</label>
+        <input type="number" id="tdXp" value="0" min="0">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeTodoModal()">取消</button>
+      <button class="btn btn-ok" onclick="saveTodo()">確認</button>
     </div>
   </div>
 </div>
@@ -1300,6 +1376,7 @@ function defaultState() {
       { id: 3, name: '信用卡', emoji: '💳', initialBalance: 0, isLiability: true  },
     ],
     ledger: [],
+    todos: [],
     lastDailyReset: todayStr(),
     lastWeeklyReset: weekStr(),
     lastModified: Date.now(),
@@ -1671,18 +1748,43 @@ function render() {
   renderList('event');
 }
 
+// === WEEKLY SECTION TOGGLE (inside daily panel) ===
+let weeklyExpanded = true;
+function toggleWeeklySection() {
+  weeklyExpanded = !weeklyExpanded;
+  document.getElementById('weeklySection').style.display = weeklyExpanded ? '' : 'none';
+  document.getElementById('weeklyArrow').textContent = weeklyExpanded ? '▾' : '▸';
+}
+
 function renderList(type) {
   const el = document.getElementById(type + 'List');
-  const list = state.quests[type];
+  if (!el) return;
+  let list = state.quests[type];
+
+  // For event type, filter by selected calendar day if set
+  if (type === 'event' && calSelectedDay) {
+    const { y, m, d } = calSelectedDay;
+    const selStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    list = list.filter(q => q.date === selStr);
+  }
+
   if (!list.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📜</div>還沒有任務，點上方「+ 新增」開始吧</div>`;
+    const msg = (type === 'event' && calSelectedDay)
+      ? '這一天沒有活動任務'
+      : '還沒有任務，點上方「+ 新增」開始吧';
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📜</div>${msg}</div>`;
     return;
   }
-  el.innerHTML = list.map(q => `
+  el.innerHTML = list.map(q => {
+    let datePart = '';
+    if (type === 'event' && q.date) {
+      datePart = `<span style="font-size:13px;color:var(--text-muted);border:1px solid var(--border);padding:1px 5px;border-radius:2px;margin-left:6px;">📅${q.date}</span>`;
+    }
+    return `
     <div class="quest ${q.done ? 'done' : ''}">
       <div class="quest-check" onclick="toggleQuest('${type}', ${q.id})">${q.done ? '✓' : ''}</div>
       <div class="quest-body">
-        <div class="quest-name">${escapeHtml(q.name)}</div>
+        <div class="quest-name">${escapeHtml(q.name)}${datePart}</div>
         <div class="quest-rewards">
           ${q.gold ? `<span class="reward-gold">+${q.gold}💰</span> ` : ''}
           ${q.gem ? `<span class="reward-gem">+${q.gem}💎</span> ` : ''}
@@ -1691,7 +1793,8 @@ function renderList(type) {
       </div>
       <button class="quest-del" onclick="deleteQuest('${type}', ${q.id})" title="刪除">✕</button>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function escapeHtml(s) {
@@ -1745,6 +1848,223 @@ function deleteQuest(type, id) {
   saveState(); render();
 }
 
+// === TODO ===
+let todoShowDoneFilter = false;
+
+function toggleTodoDoneFilter() {
+  todoShowDoneFilter = !todoShowDoneFilter;
+  const btn = document.getElementById('todoShowDone');
+  if (btn) btn.classList.toggle('active', todoShowDoneFilter);
+  renderTodos();
+}
+
+function renderTodos() {
+  const el = document.getElementById('todoList');
+  if (!el) return;
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const todayStr2 = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+
+  let items = state.todos || [];
+  if (!todoShowDoneFilter) items = items.filter(t => !t.done);
+
+  if (!items.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📋</div>還沒有待辦項目，新增一個吧！</div>`;
+    return;
+  }
+
+  // Sort: undone first, then by dueDate asc, then createdAt asc
+  items = [...items].sort((a, b) => {
+    if (a.done !== b.done) return a.done ? 1 : -1;
+    if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate);
+    if (a.dueDate) return -1;
+    if (b.dueDate) return 1;
+    return (a.createdAt || 0) - (b.createdAt || 0);
+  });
+
+  el.innerHTML = items.map(item => {
+    let duePart = '';
+    if (item.dueDate) {
+      const overdue = !item.done && item.dueDate < todayStr2;
+      const color = overdue ? 'var(--danger)' : 'var(--text-muted)';
+      duePart = `<span style="font-size:13px;color:${color};border:1px solid ${color};padding:1px 5px;border-radius:2px;margin-left:6px;">📅${item.dueDate}</span>`;
+    }
+    const rewards = [];
+    if (item.gold) rewards.push(`<span class="reward-gold">+${item.gold}💰</span>`);
+    if (item.xp)   rewards.push(`<span class="reward-xp">+${item.xp}⚡</span>`);
+    const rewardStr = rewards.length ? `<div class="quest-rewards">${rewards.join(' ')}</div>` : '';
+    return `
+      <div class="quest ${item.done ? 'done' : ''}">
+        <div class="quest-check" onclick="toggleTodo(${item.id})">${item.done ? '✓' : ''}</div>
+        <div class="quest-body">
+          <div class="quest-name">${escapeHtml(item.title)}${duePart}</div>
+          ${rewardStr}
+        </div>
+        <button class="quest-del" onclick="deleteTodo(${item.id})" title="刪除">✕</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function quickAddTodo() {
+  const input = document.getElementById('todoInput');
+  const dateInput = document.getElementById('todoDate');
+  const title = input ? input.value.trim() : '';
+  if (!title) { alert('請輸入待辦項目名稱'); return; }
+  const dueDate = dateInput ? (dateInput.value || null) : null;
+  if (!state.todos) state.todos = [];
+  state.todos.push({ id: Date.now(), title, gold: 0, xp: 0, dueDate, done: false, createdAt: Date.now() });
+  if (input) input.value = '';
+  if (dateInput) dateInput.value = '';
+  saveState();
+  renderTodos();
+}
+
+function openAddTodo() {
+  const dateInput = document.getElementById('todoDate');
+  const titleInput = document.getElementById('todoInput');
+  document.getElementById('tdName').value = titleInput ? titleInput.value.trim() : '';
+  document.getElementById('tdDate').value = dateInput ? (dateInput.value || '') : '';
+  document.getElementById('tdGold').value = '0';
+  document.getElementById('tdXp').value = '0';
+  document.getElementById('todoModalBg').classList.add('show');
+  setTimeout(() => document.getElementById('tdName').focus(), 100);
+}
+
+function closeTodoModal() {
+  document.getElementById('todoModalBg').classList.remove('show');
+}
+
+function saveTodo() {
+  const title = document.getElementById('tdName').value.trim();
+  if (!title) { alert('請輸入項目名稱'); return; }
+  const dueDate = document.getElementById('tdDate').value || null;
+  const gold = parseInt(document.getElementById('tdGold').value) || 0;
+  const xp   = parseInt(document.getElementById('tdXp').value)  || 0;
+  if (!state.todos) state.todos = [];
+  state.todos.push({ id: Date.now(), title, gold, xp, dueDate, done: false, createdAt: Date.now() });
+  // Clear the quick-add inputs too
+  const titleInput = document.getElementById('todoInput');
+  const dateInput  = document.getElementById('todoDate');
+  if (titleInput) titleInput.value = '';
+  if (dateInput)  dateInput.value  = '';
+  saveState();
+  renderTodos();
+  closeTodoModal();
+}
+
+function toggleTodo(id) {
+  if (!state.todos) state.todos = [];
+  const item = state.todos.find(t => t.id === id);
+  if (!item) return;
+  if (item.done) {
+    // Undo
+    item.done = false;
+    state.gold = Math.max(0, state.gold - item.gold);
+    state.xp   = Math.max(0, state.xp - item.xp);
+    addLedger(`[取消] ${item.title}`, item.gold, 0, 'expense');
+  } else {
+    item.done = true;
+    state.gold += item.gold;
+    addXp(item.xp);
+    addLedger(`[待辦] ${item.title}`, item.gold, 0, 'income');
+    toast(`✓ 完成！${item.gold ? '+'+item.gold+'💰 ' : ''}${item.xp ? '+'+item.xp+'⚡' : ''}`);
+  }
+  saveState();
+  render();
+  renderTodos();
+}
+
+function deleteTodo(id) {
+  if (!confirm('確定刪除這個待辦項目？')) return;
+  state.todos = (state.todos || []).filter(t => t.id !== id);
+  saveState();
+  renderTodos();
+}
+
+// === CALENDAR ===
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth(); // 0-indexed
+let calSelectedDay = null; // { y, m, d } or null
+
+function calPrev() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCalendar();
+}
+
+function calNext() {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const titleEl = document.getElementById('calTitle');
+  const gridEl  = document.getElementById('calGrid');
+  if (!titleEl || !gridEl) return;
+
+  const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  titleEl.textContent = `${calYear} ${monthNames[calMonth]}`;
+
+  const today = new Date();
+  const todayY = today.getFullYear(), todayM = today.getMonth(), todayD = today.getDate();
+
+  // Collect dates that have events
+  const eventDates = new Set();
+  (state.quests.event || []).forEach(q => {
+    if (q.date) eventDates.add(q.date);
+  });
+
+  // First day of month (0=Sun)
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const daysInPrev  = new Date(calYear, calMonth, 0).getDate();
+
+  // Day-of-week headers (Mon-Sun)
+  const dayHeaders = ['一','二','三','四','五','六','日'];
+  let html = dayHeaders.map(d => `<div class="cal-header">${d}</div>`).join('');
+
+  // Leading blanks (adjust: 0=Sun → treat as 7)
+  const startOffset = (firstDay === 0 ? 7 : firstDay) - 1;
+  for (let i = startOffset - 1; i >= 0; i--) {
+    const d = daysInPrev - i;
+    html += `<div class="cal-day other-month">${d}</div>`;
+  }
+
+  // Days of current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday    = calYear === todayY && calMonth === todayM && d === todayD;
+    const isSelected = calSelectedDay && calSelectedDay.y === calYear && calSelectedDay.m === calMonth && calSelectedDay.d === d;
+    const hasEvent   = eventDates.has(dateStr);
+    const cls = ['cal-day', isToday ? 'today' : '', isSelected ? 'selected' : '', hasEvent ? 'has-event' : ''].filter(Boolean).join(' ');
+    html += `<div class="${cls}" onclick="selectCalDay(${calYear},${calMonth},${d})">${d}</div>`;
+  }
+
+  // Trailing blanks
+  const totalCells = startOffset + daysInMonth;
+  const remainder  = totalCells % 7;
+  if (remainder !== 0) {
+    const trailing = 7 - remainder;
+    for (let i = 1; i <= trailing; i++) {
+      html += `<div class="cal-day other-month">${i}</div>`;
+    }
+  }
+
+  gridEl.innerHTML = html;
+  renderList('event');
+}
+
+function selectCalDay(y, m, d) {
+  if (calSelectedDay && calSelectedDay.y === y && calSelectedDay.m === m && calSelectedDay.d === d) {
+    calSelectedDay = null; // deselect
+  } else {
+    calSelectedDay = { y, m, d };
+  }
+  renderCalendar();
+}
+
 // === MODAL ===
 let editingType = null;
 function openAddQuest(type) {
@@ -1754,6 +2074,21 @@ function openAddQuest(type) {
   document.getElementById('qGold').value = type === 'daily' ? 10 : type === 'weekly' ? 50 : 30;
   document.getElementById('qGem').value = type === 'daily' ? 1 : type === 'weekly' ? 5 : 3;
   document.getElementById('qXp').value = type === 'daily' ? 20 : type === 'weekly' ? 80 : 50;
+  // Show/hide date field for event type
+  const dateField = document.getElementById('qDateField');
+  if (dateField) {
+    dateField.style.display = type === 'event' ? '' : 'none';
+    if (type === 'event') {
+      // Pre-fill from calendar selection if available
+      if (calSelectedDay) {
+        const { y, m, d } = calSelectedDay;
+        document.getElementById('qDate').value =
+          `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      } else {
+        document.getElementById('qDate').value = '';
+      }
+    }
+  }
   document.getElementById('modalBg').classList.add('show');
   setTimeout(() => document.getElementById('qName').focus(), 100);
 }
@@ -1768,10 +2103,14 @@ function saveQuest() {
   const gold = parseInt(document.getElementById('qGold').value) || 0;
   const gem = parseInt(document.getElementById('qGem').value) || 0;
   const xp = parseInt(document.getElementById('qXp').value) || 0;
-  state.quests[editingType].push({
-    id: Date.now(), name, gold, gem, xp, done: false
-  });
+  const questObj = { id: Date.now(), name, gold, gem, xp, done: false };
+  if (editingType === 'event') {
+    const dateVal = document.getElementById('qDate').value;
+    if (dateVal) questObj.date = dateVal;
+  }
+  state.quests[editingType].push(questObj);
   saveState(); render(); closeModal();
+  if (editingType === 'event') renderCalendar();
 }
 
 // === TABS ===
@@ -1779,10 +2118,12 @@ document.querySelectorAll('.tab').forEach(t => {
   t.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
     t.classList.add('active');
-    ['daily','weekly','event','gacha','ledger'].forEach(name => {
+    ['daily','todo','event','gacha','ledger'].forEach(name => {
       document.getElementById('panel-' + name).style.display = name === t.dataset.tab ? 'block' : 'none';
     });
     if (t.dataset.tab === 'ledger') renderLedger();
+    if (t.dataset.tab === 'todo') renderTodos();
+    if (t.dataset.tab === 'event') renderCalendar();
   });
 });
 
