@@ -1028,6 +1028,106 @@
     content:''; position:absolute; bottom:2px; left:50%; transform:translateX(-50%);
     width:4px; height:4px; border-radius:50%; background:var(--gem);
   }
+
+/* === RPG PAGE === */
+#rpgPage {
+  position: fixed; inset: 0;
+  background: var(--bg-deep);
+  z-index: 200;
+  overflow-y: auto;
+  padding: 0 16px 24px;
+  max-width: 480px;
+  margin: 0 auto;
+  display: none;
+}
+.rpg-open-btn {
+  background: linear-gradient(180deg, #c0392b, #922b21);
+  border: 2px solid #7b241c;
+  color: #fff; padding: 5px 14px;
+  font-family: 'VT323', monospace; font-size: 16px;
+  cursor: pointer; border-radius: 2px; margin-top: 6px;
+  box-shadow: 0 2px 0 #641e16; transition: all 0.1s; width: fit-content;
+}
+.rpg-open-btn:hover { transform: translateY(1px); box-shadow: 0 1px 0 #641e16; }
+
+.rpg-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0 12px; border-bottom: 2px solid var(--border);
+  margin-bottom: 16px; position: sticky; top: 0;
+  background: var(--bg-deep); z-index: 1;
+}
+.rpg-back-btn {
+  background: var(--bg-panel-light); border: 2px solid var(--border);
+  color: var(--text); padding: 5px 12px;
+  font-family: 'VT323', monospace; font-size: 16px;
+  cursor: pointer; border-radius: 2px;
+}
+.rpg-back-btn:hover { border-color: var(--gold); color: var(--gold); }
+.rpg-page-title { font-family:'Press Start 2P',monospace; font-size:11px; color:var(--gold); }
+.rpg-tickets { font-size:16px; color:var(--gem); }
+
+.monster-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:10px; margin-top:8px; }
+.monster-card {
+  background:var(--bg-panel-light); border:2px solid var(--border);
+  border-radius:4px; padding:12px 8px; text-align:center;
+  cursor:pointer; transition:border-color 0.15s; position:relative;
+}
+.monster-card:hover { border-color:var(--gold); }
+.monster-tier {
+  position:absolute; top:6px; right:6px;
+  font-size:9px; font-family:'Press Start 2P',monospace;
+  padding:1px 5px; border-radius:2px;
+}
+.tier-E { background:#444; color:#aaa; }
+.tier-D { background:#1a3a5c; color:#5dade2; }
+.tier-C { background:#1b5e20; color:#69f0ae; }
+.tier-B { background:#5d3a00; color:#ffb74d; }
+.tier-A { background:#4a1050; color:#ce93d8; }
+.monster-card-emoji { font-size:38px; margin:4px 0; }
+.monster-card-name { font-size:14px; color:var(--text); margin-bottom:4px; }
+.monster-card-stats { font-size:11px; color:var(--text-muted); line-height:1.6; }
+.monster-rec { font-size:10px; color:var(--text-muted); margin-top:2px; }
+
+.battle-combatant {
+  display:flex; align-items:center; gap:12px;
+  background:var(--bg-panel-light); border:2px solid var(--border);
+  border-radius:4px; padding:10px 12px; margin-bottom:8px;
+}
+.battle-combatant-emoji { font-size:36px; min-width:42px; text-align:center; }
+.battle-combatant-info { flex:1; }
+.battle-combatant-name { font-size:14px; color:var(--text); margin-bottom:4px; }
+.hp-bar-wrap { height:10px; background:var(--bg-deep); border:1px solid var(--border); border-radius:2px; overflow:hidden; margin-bottom:3px; }
+.hp-bar-fill { height:100%; background:#e74c3c; border-radius:2px; transition:width 0.4s; }
+.hp-bar-fill.player { background:var(--xp); }
+.hp-text { font-size:12px; color:var(--text-muted); }
+
+.battle-mid { display:flex; align-items:center; gap:12px; margin:8px 0; }
+.dice-area { font-size:32px; text-align:center; min-width:60px; }
+.battle-log {
+  flex:1; background:var(--bg-deep); border:1px solid var(--border);
+  border-radius:2px; padding:6px 10px;
+  font-size:13px; color:var(--text-dim);
+  max-height:110px; overflow-y:auto; line-height:1.9;
+}
+.battle-log .log-entry { border-bottom:1px solid rgba(255,255,255,0.04); }
+
+.skill-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-top:8px; }
+.skill-btn {
+  background:var(--bg-panel-light); border:2px solid var(--border);
+  color:var(--text); padding:10px 8px;
+  font-family:'VT323',monospace; font-size:16px;
+  cursor:pointer; border-radius:4px; text-align:left;
+  transition:border-color 0.1s; line-height:1.4;
+}
+.skill-btn:hover:not([disabled]) { border-color:var(--gold); }
+.skill-btn[disabled] { opacity:0.35; cursor:not-allowed; }
+.skill-desc { font-size:11px; opacity:0.65; display:block; }
+
+.rpg-result { text-align:center; padding:40px 16px; }
+.result-icon { font-size:64px; margin-bottom:12px; }
+.result-title { font-family:'Press Start 2P',monospace; font-size:14px; color:var(--gold); margin-bottom:12px; }
+.result-rewards { font-size:20px; margin-bottom:24px; }
+.result-btns { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
 </style>
 </head>
 <body>
@@ -1044,6 +1144,7 @@
         <span class="xp-text" id="xpText">0 / 100 XP</span>
       </div>
       <div class="xp-bar"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+      <button class="rpg-open-btn" onclick="openRpg()">⚔ 冒險</button>
     </div>
   </div>
 
@@ -1474,6 +1575,10 @@ function defaultState() {
     ledger: [],
     todos: [],
     inventory: [],
+    challengeTickets: 3,
+    statPoints: 0,
+    allocatedStats: { str: 0, vit: 0, def: 0 },
+    equipment: { weapon: null, armor: null, accessory: null },
     gachaPrizes: [
       { id: 1, name: '銘謝惠顧',    emoji: '🙏', rarity: 'N',   weight: 50, noItem: true },
       { id: 2, name: '50元娛樂點',  emoji: '🎮', rarity: 'N',   weight: 25 },
@@ -2006,6 +2111,7 @@ function addXp(amount) {
   while (state.xp >= xpForLevel(state.level)) {
     state.xp -= xpForLevel(state.level);
     state.level += 1;
+    state.statPoints = (state.statPoints || 0) + 1;
     showLevelUp();
   }
 }
@@ -2491,6 +2597,219 @@ function spendPoints() {
   toast(`🎉 使用 ${amt} 元娛樂點：${desc.trim() || '娛樂消費'}`);
 }
 
+// === RPG ===
+const MONSTERS = [
+  { id:1, name:'小史萊姆', emoji:'🟢', hp:30,  atk:4,  def:0,  gem:5,   xp:15,  tier:'E', rec:1  },
+  { id:2, name:'哥布林',   emoji:'👺', hp:80,  atk:10, def:3,  gem:12,  xp:35,  tier:'D', rec:10 },
+  { id:3, name:'骷髏兵',   emoji:'💀', hp:180, atk:20, def:8,  gem:28,  xp:75,  tier:'C', rec:25 },
+  { id:4, name:'獸人王',   emoji:'👹', hp:400, atk:35, def:15, gem:55,  xp:150, tier:'B', rec:50 },
+  { id:5, name:'冰龍',     emoji:'🐉', hp:800, atk:60, def:25, gem:100, xp:300, tier:'A', rec:80 },
+];
+
+const RPG_SKILLS = [
+  { id:'atk',   name:'普通攻擊', emoji:'⚔',  minLv:1,  cooldown:0, desc:'ATK×1 + 骰子' },
+  { id:'heavy', name:'重擊',     emoji:'💥',  minLv:15, cooldown:3, desc:'ATK×2 + 骰子×2' },
+  { id:'heal',  name:'治癒術',   emoji:'💚',  minLv:30, cooldown:4, desc:'回復 40% HP' },
+  { id:'ult',   name:'必殺技',   emoji:'⚡',  minLv:60, cooldown:6, desc:'ATK×3 無視防禦' },
+];
+
+function getRpgStats() {
+  const lv = state.level;
+  return { maxHp: lv * 10 + 50, atk: lv * 2 + 10, def: lv + 3 };
+}
+
+let rpgBattle = null;
+
+function openRpg() {
+  document.getElementById('rpgPage').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  renderRpgLobby();
+}
+
+function closeRpg() {
+  document.getElementById('rpgPage').style.display = 'none';
+  document.body.style.overflow = '';
+  rpgBattle = null;
+}
+
+function renderRpgLobby() {
+  document.getElementById('rpgLobby').style.display = '';
+  document.getElementById('rpgBattle').style.display = 'none';
+  document.getElementById('rpgResult').style.display = 'none';
+  document.getElementById('rpgTickets').textContent = state.challengeTickets || 0;
+
+  const stats = getRpgStats();
+  document.getElementById('monsterGrid').innerHTML = MONSTERS.map(m => `
+    <div class="monster-card" onclick="startRpgBattle(${m.id})">
+      <div class="monster-tier tier-${m.tier}">${m.tier}</div>
+      <div class="monster-card-emoji">${m.emoji}</div>
+      <div class="monster-card-name">${m.name}</div>
+      <div class="monster-card-stats">HP ${m.hp} / ATK ${m.atk} / DEF ${m.def}</div>
+      <div class="monster-card-stats" style="color:var(--gem)">💎+${m.gem} ⚡+${m.xp}</div>
+      <div class="monster-rec">建議 Lv.${m.rec}</div>
+    </div>
+  `).join('');
+}
+
+function startRpgBattle(monsterId) {
+  if ((state.challengeTickets || 0) < 1) { toast('🎫 沒有挑戰卷了！'); return; }
+  const monster = MONSTERS.find(m => m.id === monsterId);
+  if (!monster) return;
+
+  state.challengeTickets = (state.challengeTickets || 0) - 1;
+  saveState();
+
+  const stats = getRpgStats();
+  rpgBattle = {
+    monster: { ...monster },
+    monsterHp: monster.hp,
+    playerHp: stats.maxHp,
+    playerMaxHp: stats.maxHp,
+    cooldowns: {},
+    log: [],
+  };
+
+  document.getElementById('rpgLobby').style.display = 'none';
+  document.getElementById('rpgBattle').style.display = '';
+  document.getElementById('rpgResult').style.display = 'none';
+  document.getElementById('bMonsterEmoji').textContent = monster.emoji;
+  document.getElementById('bMonsterName').textContent = monster.name;
+  document.getElementById('bPlayerEmoji').textContent = state.avatar;
+  document.getElementById('bPlayerName').textContent = state.name;
+
+  updateRpgHpBars();
+  renderRpgSkills();
+  rpgLog(`⚔ 與 ${monster.name} 的戰鬥開始！`);
+}
+
+function rpgLog(msg) {
+  rpgBattle.log.unshift(msg);
+  if (rpgBattle.log.length > 10) rpgBattle.log.pop();
+  const el = document.getElementById('battleLog');
+  if (el) el.innerHTML = rpgBattle.log.map(l => `<div class="log-entry">${l}</div>`).join('');
+}
+
+function updateRpgHpBars() {
+  const { monster, monsterHp, playerHp, playerMaxHp } = rpgBattle;
+  const mPct = Math.max(0, monsterHp / monster.hp * 100).toFixed(1);
+  const pPct = Math.max(0, playerHp / playerMaxHp * 100).toFixed(1);
+  document.getElementById('monsterHpFill').style.width = mPct + '%';
+  document.getElementById('monsterHpText').textContent = `${Math.max(0, monsterHp)} / ${monster.hp}`;
+  document.getElementById('playerHpFill').style.width = pPct + '%';
+  document.getElementById('playerHpText').textContent = `${Math.max(0, playerHp)} / ${playerMaxHp}`;
+}
+
+function renderRpgSkills() {
+  const grid = document.getElementById('skillGrid');
+  if (!grid) return;
+  grid.innerHTML = RPG_SKILLS.map(sk => {
+    const unlocked = state.level >= sk.minLv;
+    const cd = rpgBattle.cooldowns[sk.id] || 0;
+    const disabled = !unlocked || cd > 0;
+    const subText = cd > 0 ? `冷卻 ${cd} 回` : (!unlocked ? `Lv.${sk.minLv} 解鎖` : sk.desc);
+    return `<button class="skill-btn" ${disabled ? 'disabled' : `onclick="useRpgSkill('${sk.id}')"`}>
+      <div>${sk.emoji} ${sk.name}</div>
+      <span class="skill-desc">${subText}</span>
+    </button>`;
+  }).join('');
+}
+
+function rpgRollDice(sides = 6) {
+  return Math.floor(Math.random() * sides) + 1;
+}
+
+function useRpgSkill(skillId) {
+  if (!rpgBattle) return;
+  const skill = RPG_SKILLS.find(s => s.id === skillId);
+  if (!skill) return;
+
+  const stats = getRpgStats();
+  const d1 = rpgRollDice();
+  let playerDmg = 0;
+
+  // Tick cooldowns
+  for (const k of Object.keys(rpgBattle.cooldowns)) {
+    rpgBattle.cooldowns[k]--;
+    if (rpgBattle.cooldowns[k] <= 0) delete rpgBattle.cooldowns[k];
+  }
+  if (skill.cooldown > 0) rpgBattle.cooldowns[skillId] = skill.cooldown;
+
+  if (skillId === 'atk') {
+    playerDmg = Math.max(1, stats.atk + d1 - rpgBattle.monster.def);
+    document.getElementById('diceDisplay').textContent = `🎲${d1}`;
+    rpgLog(`${skill.emoji} 普攻 🎲${d1} → 造成 ${playerDmg} 傷害`);
+  } else if (skillId === 'heavy') {
+    const d2 = rpgRollDice();
+    playerDmg = Math.max(1, stats.atk * 2 + d1 + d2 - rpgBattle.monster.def);
+    document.getElementById('diceDisplay').textContent = `🎲${d1}+${d2}`;
+    rpgLog(`${skill.emoji} 重擊 🎲${d1}+${d2} → 造成 ${playerDmg} 傷害`);
+  } else if (skillId === 'heal') {
+    const healAmt = Math.floor(rpgBattle.playerMaxHp * 0.4);
+    rpgBattle.playerHp = Math.min(rpgBattle.playerMaxHp, rpgBattle.playerHp + healAmt);
+    document.getElementById('diceDisplay').textContent = `💚`;
+    rpgLog(`${skill.emoji} 治癒術 → 回復 ${healAmt} HP`);
+    updateRpgHpBars();
+    renderRpgSkills();
+    // Monster still attacks after heal
+    rpgMonsterAttack(stats);
+    return;
+  } else if (skillId === 'ult') {
+    playerDmg = Math.max(1, stats.atk * 3 + d1);
+    document.getElementById('diceDisplay').textContent = `🎲${d1}`;
+    rpgLog(`${skill.emoji} 必殺技 🎲${d1} → 造成 ${playerDmg} 傷害（無視防禦）`);
+  }
+
+  rpgBattle.monsterHp -= playerDmg;
+  updateRpgHpBars();
+
+  if (rpgBattle.monsterHp <= 0) {
+    showRpgResult(true);
+    return;
+  }
+
+  rpgMonsterAttack(stats);
+}
+
+function rpgMonsterAttack(stats) {
+  const md = rpgRollDice();
+  const mDmg = Math.max(1, rpgBattle.monster.atk + md - Math.floor(stats.def / 3));
+  rpgBattle.playerHp -= mDmg;
+  rpgLog(`${rpgBattle.monster.emoji} 反擊 🎲${md} → 你受到 ${mDmg} 傷害`);
+  updateRpgHpBars();
+  renderRpgSkills();
+
+  if (rpgBattle.playerHp <= 0) {
+    showRpgResult(false);
+  }
+}
+
+function showRpgResult(win) {
+  document.getElementById('rpgBattle').style.display = 'none';
+  document.getElementById('rpgResult').style.display = '';
+  if (win) {
+    const { gem, xp } = rpgBattle.monster;
+    state.gem += gem;
+    addXp(xp);
+    saveState(); render();
+    document.getElementById('resultIcon').textContent = '🏆';
+    document.getElementById('resultTitle').textContent = '勝利！';
+    document.getElementById('resultRewards').innerHTML =
+      `<span class="reward-gem">💎+${gem}</span>  <span class="reward-xp">⚡+${xp}</span>`;
+    toast(`⚔ 勝利！💎+${gem} ⚡+${xp}`);
+  } else {
+    document.getElementById('resultIcon').textContent = '💀';
+    document.getElementById('resultTitle').textContent = '敗北...';
+    document.getElementById('resultRewards').textContent = '再接再厲！';
+  }
+  rpgBattle = null;
+}
+
+function rpgBackToLobby() {
+  rpgBattle = null;
+  renderRpgLobby();
+}
+
+
 // === TOAST ===
 let toastTimer;
 function toast(msg) {
@@ -2883,6 +3202,74 @@ document.getElementById('acctEditModalBg').addEventListener('click', e => {
   if (e.target.id === 'acctEditModalBg') closeAcctEditModal();
 });
 </script>
+
+<!-- RPG Page -->
+<div id="rpgPage">
+  <div class="rpg-header">
+    <button class="rpg-back-btn" onclick="closeRpg()">← 返回</button>
+    <div class="rpg-page-title">⚔ 冒險</div>
+    <div class="rpg-tickets">🎫 <span id="rpgTickets">0</span></div>
+  </div>
+
+  <!-- Sub-tabs -->
+  <div style="display:flex;gap:6px;margin-bottom:14px;">
+    <button id="rpgTab_battle" class="filter-btn active" onclick="switchRpgTab('battle')">⚔ 戰鬥</button>
+    <button id="rpgTab_char"   class="filter-btn"        onclick="switchRpgTab('char')">📊 角色</button>
+    <button id="rpgTab_skills" class="filter-btn"        onclick="switchRpgTab('skills')">⚡ 技能</button>
+  </div>
+
+  <!-- Section: Battle -->
+  <div id="rpgSection_battle">
+    <div id="rpgLobby">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">選擇怪物，消耗一張挑戰卷開始戰鬥</div>
+      <div class="monster-grid" id="monsterGrid"></div>
+    </div>
+    <div id="rpgBattle" style="display:none;">
+      <div class="battle-combatant">
+        <div class="battle-combatant-emoji" id="bMonsterEmoji">👾</div>
+        <div class="battle-combatant-info">
+          <div class="battle-combatant-name" id="bMonsterName">怪物</div>
+          <div class="hp-bar-wrap"><div class="hp-bar-fill" id="monsterHpFill" style="width:100%"></div></div>
+          <div class="hp-text" id="monsterHpText">?/?</div>
+        </div>
+      </div>
+      <div class="battle-combatant">
+        <div class="battle-combatant-emoji" id="bPlayerEmoji">🧙</div>
+        <div class="battle-combatant-info">
+          <div class="battle-combatant-name" id="bPlayerName">勇者</div>
+          <div class="hp-bar-wrap"><div class="hp-bar-fill player" id="playerHpFill" style="width:100%"></div></div>
+          <div class="hp-text" id="playerHpText">?/?</div>
+        </div>
+      </div>
+      <div class="battle-mid">
+        <div class="dice-area" id="diceDisplay">🎲</div>
+        <div class="battle-log" id="battleLog"></div>
+      </div>
+      <div class="skill-grid" id="skillGrid"></div>
+    </div>
+    <div id="rpgResult" style="display:none;">
+      <div class="rpg-result">
+        <div class="result-icon" id="resultIcon"></div>
+        <div class="result-title" id="resultTitle"></div>
+        <div class="result-rewards" id="resultRewards"></div>
+        <div class="result-btns">
+          <button class="btn btn-ok" onclick="rpgBackToLobby()">選擇怪物</button>
+          <button class="btn btn-cancel" onclick="closeRpg()">返回主頁</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section: Character -->
+  <div id="rpgSection_char" style="display:none;">
+    <div id="rpgCharContent"></div>
+  </div>
+
+  <!-- Section: Skills -->
+  <div id="rpgSection_skills" style="display:none;">
+    <div id="rpgSkillsContent"></div>
+  </div>
+</div>
 
 </body>
 </html>
