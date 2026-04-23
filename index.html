@@ -1954,10 +1954,7 @@ function renderList(type) {
       <div class="quest-check" onclick="toggleQuest('${type}', ${q.id})">${q.done ? '✓' : ''}</div>
       <div class="quest-body">
         <div class="quest-name">${escapeHtml(q.name)}${datePart}</div>
-        <div class="quest-rewards">
-          ${q.gem ? `<span class="reward-gem">+${q.gem}💎</span> ` : ''}
-          ${q.xp ? `<span class="reward-xp">+${q.xp}⚡</span>` : ''}
-        </div>
+        ${rewardHtml(q.gem, q.xp)}
       </div>
       <button class="quest-del" onclick="deleteQuest('${type}', ${q.id})" title="刪除">✕</button>
     </div>
@@ -1967,6 +1964,13 @@ function renderList(type) {
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function rewardHtml(gem, xp) {
+  const parts = [];
+  if (gem) parts.push(`<span class="reward-gem">💎<span style="opacity:0.5;margin:0 3px">${state.gem}</span>+${gem}</span>`);
+  if (xp)  parts.push(`<span class="reward-xp">⚡<span style="opacity:0.5;margin:0 3px">${state.xp}</span>+${xp}</span>`);
+  return parts.length ? `<div class="quest-rewards">${parts.join(' ')}</div>` : '';
 }
 
 // === QUEST ACTIONS ===
@@ -2053,10 +2057,7 @@ function renderTodos() {
       const color = overdue ? 'var(--danger)' : 'var(--text-muted)';
       duePart = `<span style="font-size:13px;color:${color};border:1px solid ${color};padding:1px 5px;border-radius:2px;margin-left:6px;">📅${item.dueDate}</span>`;
     }
-    const rewards = [];
-    if (item.gem) rewards.push(`<span class="reward-gem">+${item.gem}💎</span>`);
-    if (item.xp)  rewards.push(`<span class="reward-xp">+${item.xp}⚡</span>`);
-    const rewardStr = rewards.length ? `<div class="quest-rewards">${rewards.join(' ')}</div>` : '';
+    const rewardStr = rewardHtml(item.gem, item.xp);
     return `
       <div class="quest ${item.done ? 'done' : ''}">
         <div class="quest-check" onclick="toggleTodo(${item.id})">${item.done ? '✓' : ''}</div>
