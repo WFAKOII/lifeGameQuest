@@ -1077,17 +1077,13 @@
 
     <div class="shop-info">
       <strong>抽卡規則：</strong><br>
-      • 每次抽卡消耗 1 💎 + 自訂金幣數<br>
-      • 💎 是「娛樂預算」，💰 是「總財富」<br>
-      • 兩個都會扣，提醒你娛樂的代價
+      • 每次抽卡消耗 <strong style="color:var(--gem)">50 💎</strong><br>
+      • 寶石透過完成任務與待辦取得
     </div>
 
     <div class="gacha-area">
       <div class="gacha-machine" id="gachaMachine">🎁</div>
-      <div class="gacha-cost">
-        本次抽卡花費：
-        <input type="number" id="gachaCost" value="50" min="1" style="width:80px; background:var(--bg-deep); border:2px solid var(--border); color:var(--gold); padding:4px; font-family:'VT323'; font-size:18px; text-align:center; border-radius:2px;"> 💰 + 1 💎
-      </div>
+      <div class="gacha-cost">每次抽卡花費：<strong style="color:var(--gem)">50 💎</strong></div>
       <button class="gacha-btn" id="gachaBtn" onclick="doGacha()">🎲 抽 卡 !</button>
       <div class="gacha-result" id="gachaResult">準備好就按下抽卡按鈕！</div>
     </div>
@@ -1172,12 +1168,8 @@
     </div>
     <div class="field-row">
       <div class="field">
-        <label>💰 金幣</label>
-        <input type="number" id="qGold" value="10" min="0">
-      </div>
-      <div class="field">
-        <label>💎 抽卡</label>
-        <input type="number" id="qGem" value="0" min="0">
+        <label>💎 寶石</label>
+        <input type="number" id="qGem" value="3" min="0">
       </div>
       <div class="field">
         <label>⚡ XP</label>
@@ -1205,8 +1197,8 @@
     </div>
     <div class="field-row">
       <div class="field">
-        <label>💰 金幣獎勵</label>
-        <input type="number" id="tdGold" value="0" min="0">
+        <label>💎 寶石獎勵</label>
+        <input type="number" id="tdGem" value="0" min="0">
       </div>
       <div class="field">
         <label>⚡ XP 獎勵</label>
@@ -1362,11 +1354,11 @@ function defaultState() {
     gem: 0,
     quests: {
       daily: [
-        { id: 1, name: '喝 2000ml 水', gold: 5, gem: 1, xp: 10, done: false },
-        { id: 2, name: '運動 30 分鐘', gold: 20, gem: 2, xp: 30, done: false },
+        { id: 1, name: '喝 2000ml 水', gem: 1, xp: 10, done: false },
+        { id: 2, name: '運動 30 分鐘', gem: 3, xp: 30, done: false },
       ],
       weekly: [
-        { id: 3, name: '整理房間', gold: 50, gem: 5, xp: 80, done: false },
+        { id: 3, name: '整理房間', gem: 5, xp: 80, done: false },
       ],
       event: [],
     },
@@ -1786,7 +1778,6 @@ function renderList(type) {
       <div class="quest-body">
         <div class="quest-name">${escapeHtml(q.name)}${datePart}</div>
         <div class="quest-rewards">
-          ${q.gold ? `<span class="reward-gold">+${q.gold}💰</span> ` : ''}
           ${q.gem ? `<span class="reward-gem">+${q.gem}💎</span> ` : ''}
           ${q.xp ? `<span class="reward-xp">+${q.xp}⚡</span>` : ''}
         </div>
@@ -1808,20 +1799,16 @@ function toggleQuest(type, id) {
   if (q.done) {
     // undo
     q.done = false;
-    state.gold = Math.max(0, state.gold - q.gold);
-    state.gem = Math.max(0, state.gem - q.gem);
+    state.gem = Math.max(0, state.gem - (q.gem || 0));
     state.xp = Math.max(0, state.xp - q.xp);
-    if (q.gold || q.gem) addLedger(`[取消] ${q.name}`, q.gold, q.gem, 'expense');
   } else {
     q.done = true;
-    state.gold += q.gold;
-    state.gem += q.gem;
+    state.gem += (q.gem || 0);
     addXp(q.xp);
-    if (q.gold || q.gem) {
-      const label = type === 'daily' ? '每日' : type === 'weekly' ? '每週' : '活動';
-      addLedger(`[${label}] ${q.name}`, q.gold, q.gem, 'income');
-    }
-    toast(`+${q.gold}💰 +${q.gem}💎 +${q.xp}⚡`);
+    const parts = [];
+    if (q.gem) parts.push(`+${q.gem}💎`);
+    if (q.xp)  parts.push(`+${q.xp}⚡`);
+    toast(parts.join(' ') || '✓');
     if (type === 'event') {
       // event auto-removes after a moment
       setTimeout(() => {
@@ -1890,8 +1877,8 @@ function renderTodos() {
       duePart = `<span style="font-size:13px;color:${color};border:1px solid ${color};padding:1px 5px;border-radius:2px;margin-left:6px;">📅${item.dueDate}</span>`;
     }
     const rewards = [];
-    if (item.gold) rewards.push(`<span class="reward-gold">+${item.gold}💰</span>`);
-    if (item.xp)   rewards.push(`<span class="reward-xp">+${item.xp}⚡</span>`);
+    if (item.gem) rewards.push(`<span class="reward-gem">+${item.gem}💎</span>`);
+    if (item.xp)  rewards.push(`<span class="reward-xp">+${item.xp}⚡</span>`);
     const rewardStr = rewards.length ? `<div class="quest-rewards">${rewards.join(' ')}</div>` : '';
     return `
       <div class="quest ${item.done ? 'done' : ''}">
@@ -1913,7 +1900,7 @@ function quickAddTodo() {
   if (!title) { alert('請輸入待辦項目名稱'); return; }
   const dueDate = dateInput ? (dateInput.value || null) : null;
   if (!state.todos) state.todos = [];
-  state.todos.push({ id: Date.now(), title, gold: 0, xp: 0, dueDate, done: false, createdAt: Date.now() });
+  state.todos.push({ id: Date.now(), title, gem: 0, xp: 0, dueDate, done: false, createdAt: Date.now() });
   if (input) input.value = '';
   if (dateInput) dateInput.value = '';
   saveState();
@@ -1925,7 +1912,7 @@ function openAddTodo() {
   const titleInput = document.getElementById('todoInput');
   document.getElementById('tdName').value = titleInput ? titleInput.value.trim() : '';
   document.getElementById('tdDate').value = dateInput ? (dateInput.value || '') : '';
-  document.getElementById('tdGold').value = '0';
+  document.getElementById('tdGem').value = '0';
   document.getElementById('tdXp').value = '0';
   document.getElementById('todoModalBg').classList.add('show');
   setTimeout(() => document.getElementById('tdName').focus(), 100);
@@ -1939,10 +1926,10 @@ function saveTodo() {
   const title = document.getElementById('tdName').value.trim();
   if (!title) { alert('請輸入項目名稱'); return; }
   const dueDate = document.getElementById('tdDate').value || null;
-  const gold = parseInt(document.getElementById('tdGold').value) || 0;
-  const xp   = parseInt(document.getElementById('tdXp').value)  || 0;
+  const gem = parseInt(document.getElementById('tdGem').value) || 0;
+  const xp  = parseInt(document.getElementById('tdXp').value)  || 0;
   if (!state.todos) state.todos = [];
-  state.todos.push({ id: Date.now(), title, gold, xp, dueDate, done: false, createdAt: Date.now() });
+  state.todos.push({ id: Date.now(), title, gem, xp, dueDate, done: false, createdAt: Date.now() });
   // Clear the quick-add inputs too
   const titleInput = document.getElementById('todoInput');
   const dateInput  = document.getElementById('todoDate');
@@ -1958,17 +1945,17 @@ function toggleTodo(id) {
   const item = state.todos.find(t => t.id === id);
   if (!item) return;
   if (item.done) {
-    // Undo
     item.done = false;
-    state.gold = Math.max(0, state.gold - item.gold);
-    state.xp   = Math.max(0, state.xp - item.xp);
-    addLedger(`[取消] ${item.title}`, item.gold, 0, 'expense');
+    state.gem = Math.max(0, state.gem - (item.gem || 0));
+    state.xp  = Math.max(0, state.xp - item.xp);
   } else {
     item.done = true;
-    state.gold += item.gold;
+    state.gem += (item.gem || 0);
     addXp(item.xp);
-    addLedger(`[待辦] ${item.title}`, item.gold, 0, 'income');
-    toast(`✓ 完成！${item.gold ? '+'+item.gold+'💰 ' : ''}${item.xp ? '+'+item.xp+'⚡' : ''}`);
+    const parts = ['✓ 完成！'];
+    if (item.gem) parts.push(`+${item.gem}💎`);
+    if (item.xp)  parts.push(`+${item.xp}⚡`);
+    toast(parts.join(' '));
   }
   saveState();
   render();
@@ -2071,8 +2058,7 @@ function openAddQuest(type) {
   editingType = type;
   document.getElementById('modalTitle').textContent = `新增${type === 'daily' ? '每日' : type === 'weekly' ? '每週' : '活動'}任務`;
   document.getElementById('qName').value = '';
-  document.getElementById('qGold').value = type === 'daily' ? 10 : type === 'weekly' ? 50 : 30;
-  document.getElementById('qGem').value = type === 'daily' ? 1 : type === 'weekly' ? 5 : 3;
+  document.getElementById('qGem').value = type === 'daily' ? 3 : type === 'weekly' ? 10 : 5;
   document.getElementById('qXp').value = type === 'daily' ? 20 : type === 'weekly' ? 80 : 50;
   // Show/hide date field for event type
   const dateField = document.getElementById('qDateField');
@@ -2100,10 +2086,9 @@ function closeModal() {
 function saveQuest() {
   const name = document.getElementById('qName').value.trim();
   if (!name) { alert('請輸入任務名稱'); return; }
-  const gold = parseInt(document.getElementById('qGold').value) || 0;
   const gem = parseInt(document.getElementById('qGem').value) || 0;
   const xp = parseInt(document.getElementById('qXp').value) || 0;
-  const questObj = { id: Date.now(), name, gold, gem, xp, done: false };
+  const questObj = { id: Date.now(), name, gem, xp, done: false };
   if (editingType === 'event') {
     const dateVal = document.getElementById('qDate').value;
     if (dateVal) questObj.date = dateVal;
@@ -2147,14 +2132,10 @@ function pickPrize() {
 }
 
 function doGacha() {
-  const cost = parseInt(document.getElementById('gachaCost').value) || 0;
-  if (cost < 1) { alert('金幣花費要大於 0'); return; }
-  if (state.gold < cost) { toast('💰 金幣不夠！'); return; }
-  if (state.gem < 1) { toast('💎 抽卡資源不夠！'); return; }
+  if (state.gem < 50) { toast('💎 寶石不夠！需要 50 💎'); return; }
 
-  state.gold -= cost;
-  state.gem -= 1;
-  addLedger(`[抽卡] 抽一次`, cost, 1, 'expense');
+  state.gem -= 50;
+  addLedger(`[抽卡] 抽一次`, 0, 50, 'expense');
   saveState(); render();
 
   const machine = document.getElementById('gachaMachine');
