@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LIFE QUEST</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root {
     --bg-deep: #0a0e27;
@@ -753,6 +754,57 @@
   .ledger-entry:hover .ledger-del { opacity: 1; }
   .ledger-del:hover { color: var(--danger); }
 
+  /* === CLOUD SYNC === */
+  .cloud-bar {
+    background: var(--bg-panel);
+    border: 3px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 14px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    box-shadow: var(--shadow);
+  }
+
+  .cloud-status-text {
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .cloud-status-text.connected { color: var(--hp); }
+  .cloud-status-text.syncing   { color: var(--xp); }
+  .cloud-status-text.error     { color: var(--danger); }
+
+  .cloud-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  .cloud-btn {
+    background: var(--bg-deep);
+    border: 2px solid var(--border);
+    color: var(--text-dim);
+    padding: 4px 10px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .cloud-btn:hover:not(:disabled) { border-color: var(--border-bright); color: var(--text); }
+  .cloud-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .cloud-btn.primary { border-color: var(--xp); color: var(--xp); }
+  .cloud-btn.primary:hover:not(:disabled) { background: var(--xp); color: var(--bg-deep); }
+
   @media (max-width: 480px) {
     body { font-size: 18px; }
     .container { padding: 10px; }
@@ -914,6 +966,15 @@
     <div class="ledger-list" id="ledgerList"></div>
   </div>
 
+  <!-- Cloud Sync Bar -->
+  <div class="cloud-bar">
+    <div class="cloud-status-text" id="cloudStatusText">☁ 未設定雲端同步</div>
+    <div class="cloud-actions">
+      <button class="cloud-btn primary" id="cloudSyncBtn" onclick="doCloudSync()" style="display:none">↑↓ 同步</button>
+      <button class="cloud-btn" onclick="openCloudSettings()">⚙ 設定</button>
+    </div>
+  </div>
+
   <div class="footer">
     <a onclick="exportData()">匯出資料</a>·
     <a onclick="importData()">匯入資料</a>·
@@ -983,6 +1044,31 @@
   </div>
 </div>
 
+<!-- Cloud Settings Modal -->
+<div class="modal-bg" id="cloudModalBg">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-title">☁ Google 雲端同步</div>
+    <div class="shop-info" style="font-size:14px;line-height:1.8;">
+      需要前往 <strong>Google Cloud Console</strong> 建立 OAuth 2.0 Client ID：<br>
+      ① 建立專案 → 啟用 Google Drive API<br>
+      ② 建立憑證 → OAuth 2.0 用戶端 ID（Web 應用程式類型）<br>
+      ③ 在「已授權的 JavaScript 來源」加入本頁 URL<br>
+      ④ 複製 Client ID 貼入下方<br><br>
+      <strong style="color:var(--danger);">⚠ 需在 https:// 環境使用</strong>（如 GitHub Pages），<br>
+      直接開啟 file:// 的本機檔案無法使用 OAuth。
+    </div>
+    <div class="field">
+      <label>Google Client ID</label>
+      <input type="text" id="cloudClientId" placeholder="xxxxxxxx.apps.googleusercontent.com" style="font-size:14px;">
+    </div>
+    <div style="font-size:13px;color:var(--text-muted);margin-top:4px;">儲存後點「↑↓ 同步」按鈕完成 Google 授權</div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeCloudModal()">取消</button>
+      <button class="btn btn-ok" onclick="saveCloudSettings()">儲存</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -1015,6 +1101,7 @@ function defaultState() {
     ledger: [],
     lastDailyReset: todayStr(),
     lastWeeklyReset: weekStr(),
+    lastModified: Date.now(),
   };
 }
 
@@ -1028,6 +1115,7 @@ function loadState() {
 }
 
 function saveState() {
+  state.lastModified = Date.now();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
@@ -1497,6 +1585,196 @@ function resetAll() {
   toast('已重置！');
 }
 
+// === GOOGLE DRIVE SYNC ===
+const CLOUD_KEY = 'lifequest_gClientId';
+const DRIVE_FILE  = 'lifequest-v1-sync.json';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
+
+let _tokenClient = null;
+let _accessToken = null;
+let _tokenExpiry  = 0;
+let _driveFileId  = null;
+
+function cloudClientId() {
+  return localStorage.getItem(CLOUD_KEY) || '';
+}
+
+function initTokenClient() {
+  const cid = cloudClientId();
+  if (!cid || typeof google === 'undefined' || !google.accounts) return false;
+  _tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: cid,
+    scope: DRIVE_SCOPE,
+    callback: () => {},
+  });
+  return true;
+}
+
+async function getToken() {
+  if (_accessToken && Date.now() < _tokenExpiry - 60000) return _accessToken;
+  if (!_tokenClient && !initTokenClient()) {
+    throw new Error('未設定 Client ID 或 Google 尚未載入，請稍候再試');
+  }
+  return new Promise((resolve, reject) => {
+    _tokenClient.callback = (resp) => {
+      if (resp.error) {
+        reject(new Error(resp.error_description || resp.error));
+        return;
+      }
+      _accessToken = resp.access_token;
+      _tokenExpiry  = Date.now() + (resp.expires_in || 3600) * 1000;
+      resolve(_accessToken);
+    };
+    _tokenClient.requestAccessToken({ prompt: '' });
+  });
+}
+
+async function driveReq(url, opts = {}) {
+  const token = await getToken();
+  const res = await fetch(url, {
+    ...opts,
+    headers: { Authorization: `Bearer ${token}`, ...(opts.headers || {}) },
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`Drive API ${res.status}: ${body.slice(0, 120)}`);
+  }
+  return res;
+}
+
+async function findDriveFile() {
+  if (_driveFileId) return _driveFileId;
+  const q  = encodeURIComponent(`name='${DRIVE_FILE}'`);
+  const res = await driveReq(
+    `https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&q=${q}&fields=files(id)`
+  );
+  const data = await res.json();
+  if (data.files && data.files.length > 0) {
+    _driveFileId = data.files[0].id;
+  }
+  return _driveFileId || null;
+}
+
+async function cloudUpload(s) {
+  const content = JSON.stringify(s);
+  const fileId  = await findDriveFile();
+  if (fileId) {
+    await driveReq(
+      `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,
+      { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: content }
+    );
+  } else {
+    // Multipart create: metadata + content in one request
+    const boundary = 'lifequestbnd';
+    const meta = JSON.stringify({ name: DRIVE_FILE, parents: ['appDataFolder'] });
+    const body = [
+      `--${boundary}`,
+      'Content-Type: application/json; charset=UTF-8',
+      '',
+      meta,
+      `--${boundary}`,
+      'Content-Type: application/json',
+      '',
+      content,
+      `--${boundary}--`,
+    ].join('\r\n');
+    const res = await driveReq(
+      `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },
+        body,
+      }
+    );
+    const created = await res.json();
+    _driveFileId = created.id;
+  }
+}
+
+async function cloudDownload() {
+  const fileId = await findDriveFile();
+  if (!fileId) return null;
+  const res = await driveReq(
+    `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`
+  );
+  return res.json();
+}
+
+function setCloudStatus(cls, text) {
+  const el  = document.getElementById('cloudStatusText');
+  const btn = document.getElementById('cloudSyncBtn');
+  el.className = 'cloud-status-text' + (cls ? ' ' + cls : '');
+  el.textContent = text;
+  // Show sync button whenever a Client ID is configured
+  btn.style.display = cloudClientId() ? '' : 'none';
+}
+
+async function doCloudSync() {
+  const btn = document.getElementById('cloudSyncBtn');
+  btn.disabled = true;
+  setCloudStatus('syncing', '☁ 同步中...');
+  try {
+    const cloudData = await cloudDownload();
+    if (cloudData) {
+      const localTs = state.lastModified || 0;
+      const cloudTs = cloudData.lastModified || 0;
+      if (cloudTs > localTs) {
+        const dStr = new Date(cloudTs).toLocaleString();
+        if (confirm(`雲端資料較新（${dStr}），要下載覆蓋本機資料嗎？\n（取消則保留本機並上傳）`)) {
+          state = Object.assign(defaultState(), cloudData);
+          saveState(); render();
+          setCloudStatus('connected', '☁ 已從雲端下載 ' + new Date().toLocaleTimeString());
+          toast('已從雲端下載！');
+          return;
+        }
+      }
+    }
+    // Local is newer (or user declined download) — upload
+    await cloudUpload(state);
+    setCloudStatus('connected', '☁ 已同步 ' + new Date().toLocaleTimeString());
+    toast('已上傳到雲端！');
+  } catch (err) {
+    console.error('[cloud]', err);
+    setCloudStatus('error', '☁ 失敗：' + (err.message || err));
+    toast('同步失敗！');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function openCloudSettings() {
+  document.getElementById('cloudClientId').value = cloudClientId();
+  document.getElementById('cloudModalBg').classList.add('show');
+  setTimeout(() => document.getElementById('cloudClientId').focus(), 100);
+}
+
+function closeCloudModal() {
+  document.getElementById('cloudModalBg').classList.remove('show');
+}
+
+function saveCloudSettings() {
+  const cid = document.getElementById('cloudClientId').value.trim();
+  if (!cid) {
+    localStorage.removeItem(CLOUD_KEY);
+    _tokenClient = null; _accessToken = null; _driveFileId = null;
+    closeCloudModal();
+    setCloudStatus('', '☁ 未設定雲端同步');
+    return;
+  }
+  localStorage.setItem(CLOUD_KEY, cid);
+  // Reset cached token/file when Client ID changes
+  _tokenClient = null; _accessToken = null; _driveFileId = null;
+  closeCloudModal();
+  setCloudStatus('', '☁ 已設定，點「↑↓ 同步」授權並開始同步');
+}
+
+// Restore cloud status on load
+(function restoreCloudStatus() {
+  if (cloudClientId()) {
+    setCloudStatus('', '☁ 已設定，點「↑↓ 同步」授權並開始同步');
+  }
+})();
+
 // === INIT ===
 checkResets();
 render();
@@ -1507,6 +1785,9 @@ document.getElementById('modalBg').addEventListener('click', e => {
 });
 document.getElementById('entryModalBg').addEventListener('click', e => {
   if (e.target.id === 'entryModalBg') closeEntryModal();
+});
+document.getElementById('cloudModalBg').addEventListener('click', e => {
+  if (e.target.id === 'cloudModalBg') closeCloudModal();
 });
 </script>
 
