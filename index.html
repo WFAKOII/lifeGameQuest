@@ -1594,7 +1594,7 @@ function defaultState() {
     allocatedStats: { str: 0, int: 0, vit: 0, agi: 0, crt: 0 },
     equipment: { weapon: null, armor: null, accessory: null },
     gachaPrizes: [
-      { id: 1, name: '銘謝惠顧',    emoji: '🙏', rarity: 'N',   weight: 50, noItem: true },
+      { id: 1, name: '挑戰卷',      emoji: '🎫', rarity: 'N',   weight: 50, noItem: true, ticketMin: 1, ticketMax: 5 },
       { id: 2, name: '50元娛樂點',  emoji: '🎮', rarity: 'N',   weight: 25 },
       { id: 3, name: '100元娛樂點', emoji: '🎯', rarity: 'R',   weight: 14 },
       { id: 4, name: '150元娛樂點', emoji: '🎁', rarity: 'SR',  weight:  7 },
@@ -2444,7 +2444,12 @@ function doGacha() {
   setTimeout(() => {
     machine.classList.remove('spinning');
     const prize = pickPrize();
-    if (!prize.noItem) {
+    let displayName = prize.name;
+    if (prize.ticketMin != null && prize.ticketMax != null) {
+      const n = Math.floor(Math.random() * (prize.ticketMax - prize.ticketMin + 1)) + prize.ticketMin;
+      state.challengeTickets = (state.challengeTickets || 0) + n;
+      displayName = `${prize.name} ×${n}`;
+    } else if (!prize.noItem) {
       if (!state.inventory) state.inventory = [];
       const existing = state.inventory.find(i => i.name === prize.name);
       if (existing) { existing.count++; } else {
@@ -2455,7 +2460,7 @@ function doGacha() {
     const col = RARITY_COLOR[prize.rarity] || RARITY_COLOR.N;
     const lbl = RARITY_LABEL[prize.rarity] || prize.rarity || 'N';
     result.className = `gacha-result win rarity-${prize.rarity || 'N'}`;
-    result.innerHTML = `${prize.emoji || '🎁'} ${escapeHtml(prize.name)}<br><span style="font-size:12px;color:${col};border:1px solid ${col};padding:1px 8px;border-radius:2px;">${lbl}</span>`;
+    result.innerHTML = `${prize.emoji || '🎁'} ${escapeHtml(displayName)}<br><span style="font-size:12px;color:${col};border:1px solid ${col};padding:1px 8px;border-radius:2px;">${lbl}</span>`;
     btn.disabled = false;
     renderInventory();
   }, 1200);
