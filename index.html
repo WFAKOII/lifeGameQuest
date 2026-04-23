@@ -1101,27 +1101,42 @@
       </div>
       <div class="field">
         <label>類型</label>
-        <select id="eType" onchange="renderCategoryGrid(this.value)" style="width:100%;background:var(--bg-deep);border:2px solid var(--border);color:var(--text);padding:8px 4px;font-family:'VT323';font-size:18px;border-radius:2px;">
+        <select id="eType" onchange="onTypeChange(this.value)" style="width:100%;background:var(--bg-deep);border:2px solid var(--border);color:var(--text);padding:8px 4px;font-family:'VT323';font-size:18px;border-radius:2px;">
           <option value="expense">- 支出</option>
           <option value="income">+ 收入</option>
+          <option value="transfer">↔ 轉帳</option>
         </select>
       </div>
     </div>
-    <div class="field" style="margin-top:8px;">
-      <label>類別（選填）</label>
-      <div class="cat-grid" id="catGrid"></div>
+    <!-- Normal: category + account (hidden for transfer) -->
+    <div id="normalFields">
+      <div class="field" style="margin-top:8px;">
+        <label>類別（選填）</label>
+        <div class="cat-grid" id="catGrid"></div>
+      </div>
+      <div class="field">
+        <label>帳戶（選填）</label>
+        <div class="acct-row" id="acctRow"></div>
+      </div>
+      <div class="field" style="margin-top:8px;">
+        <label>計入金幣餘額</label>
+        <button type="button" id="eCountsBtn" onclick="toggleECounts()"
+          style="width:100%;padding:8px 0;font-family:'VT323',monospace;font-size:18px;border-radius:2px;cursor:pointer;border:2px solid #2e7d32;background:var(--hp);color:var(--bg-deep);transition:all 0.15s;">
+          ✓ 計入
+        </button>
+      </div>
     </div>
-    <div class="field">
-      <label>帳戶（選填）</label>
-      <div class="acct-row" id="acctRow"></div>
-    </div>
-    <div style="font-size:14px;color:var(--text-muted);margin-top:4px;">金幣 / 抽卡填數量（正數），選類型後儲存</div>
-    <div class="field" style="margin-top:10px;">
-      <label>計入金幣餘額</label>
-      <button type="button" id="eCountsBtn" onclick="toggleECounts()"
-        style="width:100%;padding:8px 0;font-family:'VT323',monospace;font-size:18px;border-radius:2px;cursor:pointer;border:2px solid #2e7d32;background:var(--hp);color:var(--bg-deep);transition:all 0.15s;">
-        ✓ 計入
-      </button>
+    <!-- Transfer: from → to accounts (shown only for transfer) -->
+    <div id="transferFields" style="display:none;">
+      <div class="field" style="margin-top:8px;">
+        <label>從帳戶</label>
+        <select id="eFromAcct" style="width:100%;background:var(--bg-deep);border:2px solid var(--border);color:var(--text);padding:8px 4px;font-family:'VT323';font-size:18px;border-radius:2px;"></select>
+      </div>
+      <div class="field">
+        <label>到帳戶</label>
+        <select id="eToAcct" style="width:100%;background:var(--bg-deep);border:2px solid var(--border);color:var(--text);padding:8px 4px;font-family:'VT323';font-size:18px;border-radius:2px;"></select>
+      </div>
+      <div style="font-size:14px;color:var(--text-muted);margin-top:4px;">轉帳自動標記為「不計入金幣」</div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-cancel" onclick="closeEntryModal()">取消</button>
@@ -1368,6 +1383,17 @@ const CATEGORIES = {
 let selectedCategory = null;
 let selectedAccount  = null;
 
+function onTypeChange(type) {
+  const isTransfer = type === 'transfer';
+  document.getElementById('normalFields').style.display   = isTransfer ? 'none' : '';
+  document.getElementById('transferFields').style.display = isTransfer ? '' : 'none';
+  if (isTransfer) {
+    populateTransferSelects();
+  } else {
+    renderCategoryGrid(type);
+  }
+}
+
 function renderCategoryGrid(type) {
   selectedCategory = null;
   const cats = CATEGORIES[type] || CATEGORIES.expense;
@@ -1376,6 +1402,17 @@ function renderCategoryGrid(type) {
       ${escapeHtml(c)}
     </button>
   `).join('');
+}
+
+function populateTransferSelects() {
+  const opts = state.accounts.map(a =>
+    `<option value="${a.id}">${a.emoji} ${escapeHtml(a.name)}</option>`
+  ).join('');
+  document.getElementById('eFromAcct').innerHTML = opts;
+  document.getElementById('eToAcct').innerHTML   = opts;
+  if (state.accounts.length >= 2) {
+    document.getElementById('eToAcct').value = state.accounts[1].id;
+  }
 }
 
 function selectCat(btn) {
@@ -1440,6 +1477,8 @@ function openAddEntry() {
   document.getElementById('eGem').value = '0';
   document.getElementById('eType').value = 'expense';
   setECounts(true);
+  document.getElementById('normalFields').style.display   = '';
+  document.getElementById('transferFields').style.display = 'none';
   renderCategoryGrid('expense');
   renderAccountPicker();
   document.getElementById('entryModalBg').classList.add('show');
@@ -1451,22 +1490,39 @@ function closeEntryModal() {
 }
 
 function saveEntry() {
+  const type = document.getElementById('eType').value;
+  const gold = Math.abs(parseInt(document.getElementById('eGold').value) || 0);
+  const gem  = Math.abs(parseInt(document.getElementById('eGem').value)  || 0);
+
+  // Transfer: build auto-description from account names, always 不計入
+  if (type === 'transfer') {
+    if (!gold && !gem) { alert('金幣或抽卡至少要填一個'); return; }
+    const fromId  = parseInt(document.getElementById('eFromAcct').value);
+    const toId    = parseInt(document.getElementById('eToAcct').value);
+    if (fromId === toId) { alert('從帳戶和到帳戶不能相同'); return; }
+    const fromA = state.accounts.find(a => a.id === fromId);
+    const toA   = state.accounts.find(a => a.id === toId);
+    const desc  = document.getElementById('eDesc').value.trim() ||
+                  `${fromA.emoji}${fromA.name} → ${toA.emoji}${toA.name}`;
+    addLedger(desc, gold, gem, 'expense', false, '↔轉帳', null);
+    saveState(); render(); closeEntryModal();
+    toast('已記錄轉帳');
+    return;
+  }
+
   const desc = document.getElementById('eDesc').value.trim();
   if (!desc) { alert('請輸入說明'); return; }
-  const gold = Math.abs(parseInt(document.getElementById('eGold').value) || 0);
-  const gem = Math.abs(parseInt(document.getElementById('eGem').value) || 0);
-  const type = document.getElementById('eType').value;
   if (!gold && !gem) { alert('金幣或抽卡至少要填一個'); return; }
 
   if (eCounts) {
     if (type === 'income') {
       state.gold += gold;
-      state.gem += gem;
+      state.gem  += gem;
     } else {
       if (state.gold < gold) { alert('金幣不夠扣！'); return; }
-      if (state.gem < gem) { alert('抽卡資源不夠扣！'); return; }
+      if (state.gem  < gem)  { alert('抽卡資源不夠扣！'); return; }
       state.gold -= gold;
-      state.gem -= gem;
+      state.gem  -= gem;
     }
   }
   addLedger(desc, gold, gem, type, eCounts, selectedCategory, selectedAccount);
